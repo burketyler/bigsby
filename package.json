@@ -1,5 +1,5 @@
 {
-  "name": "easy-lambdas",
+  "name": "lambda-easy",
   "version": "0.5",
   "description": "Typescript based AWS Lambda engine, making life easier.",
   "main": ".build/index.js",
