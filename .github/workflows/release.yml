@@ -20,9 +20,9 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'yarn'
       - name: Build
-      - run: yarn install --frozen-lockfile
+        run: yarn install --frozen-lockfile
       - run: yarn verify
       - run: yarn build
       - run: yarn test
       - name: Release
-      - run: yarn semantic-release
+        run: yarn semantic-release
