@@ -1,6 +1,6 @@
 {
   "name": "lambda-easy",
-  "version": "0.5",
+  "version": "0.1.1",
   "description": "Typescript based AWS Lambda engine, making life easier.",
   "main": ".build/index.js",
   "author": "burketyler",
