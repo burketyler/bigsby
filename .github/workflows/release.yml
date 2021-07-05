@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    branches: [ master ]
+    branches: [ ci/semantic-release ]
 
 jobs:
   release:
@@ -19,11 +19,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'yarn'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+      - name: Build
       - run: yarn install --frozen-lockfile
       - run: yarn verify
       - run: yarn build
       - run: yarn test
+      - name: Release
       - run: yarn semantic-release
