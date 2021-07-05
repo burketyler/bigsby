@@ -25,4 +25,7 @@ jobs:
       - run: yarn build
       - run: yarn test
       - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
         run: yarn semantic-release --branches ci/semantic-release
