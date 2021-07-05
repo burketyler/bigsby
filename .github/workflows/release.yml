@@ -23,8 +23,6 @@ jobs:
       - run: yarn verify
       - run: yarn build
       - run: yarn test
-      - name: Release
-        uses: ./.github/actions/build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
