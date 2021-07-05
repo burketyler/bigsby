@@ -1,0 +1,65 @@
+{
+  "name": "easy-lambdas",
+  "version": "0.5",
+  "description": "Typescript based AWS Lambda engine, making life easier.",
+  "main": ".build/index.js",
+  "author": "burketyler",
+  "license": "MIT",
+  "keywords": [
+    "lambda",
+    "annotations",
+    "decorate",
+    "typescript",
+    "easy",
+    "framework",
+    "engine",
+    "helpers"
+  ],
+  "scripts": {
+    "clean": "rm -rf .build",
+    "build": "yarn clean && tsc",
+    "prettier": "prettier --write \"**/*.ts\" --loglevel error",
+    "lint": "eslint -c src/**/*.ts",
+    "release": "yarn prettier && yarn lint && yarn build && yarn publish",
+    "test": "jest",
+    "cm": "git-cz"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^8.5.1",
+    "reflect-metadata": "^0.1.13",
+    "ts-injection": "^1.1.8"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.77",
+    "@types/jest": "^26.0.23",
+    "@types/jsonwebtoken": "^8.5.2",
+    "@typescript-eslint/eslint-plugin": "^4.27.0",
+    "@typescript-eslint/parser": "^4.27.0",
+    "aws-sdk": "^2.931.0",
+    "commitizen": "^4.2.4",
+    "commitlint": "^12.1.4",
+    "cz-customizable": "^6.3.0",
+    "eslint": "^7.30.0",
+    "husky": "^7.0.0",
+    "jest": "^27.0.4",
+    "prettier": "^2.3.1",
+    "source-map-support": "^0.5.19",
+    "ts-jest": "^27.0.3",
+    "ts-node": "^10.0.0",
+    "tslib": "^2.3.0",
+    "typescript": "^4.3.4"
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-customizable"
+    },
+    "cz-customizable": {
+      "config": "commitizen.config.js"
+    }
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  }
+}
