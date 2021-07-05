@@ -2,7 +2,6 @@ name: Build
 
 on:
   push:
-    branches: [ develop ]
 
 jobs:
   build:
@@ -19,7 +18,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'yarn'
-      - name: Verify and Build
+      - name: Build
         run: yarn install --frozen-lockfile
       - run: yarn verify
       - run: yarn build
