@@ -16,8 +16,8 @@
     "helpers"
   ],
   "scripts": {
-    "prettier": "prettier --write \"**/*.ts\" --loglevel error",
-    "lint": "eslint -c src/**/*.ts",
+    "prettier": "prettier --check \"**/*.ts\" --loglevel error",
+    "lint": "eslint -c ./.eslintrc src/**/*.ts",
     "verify": "yarn prettier && yarn lint",
     "clean": "rm -rf .build",
     "build": "yarn clean && tsc",
