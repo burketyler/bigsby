@@ -1,24 +1,32 @@
-name: Node.js NPM package CI
+name: Release
 
 on:
   push:
-    branches: [ develop ]
+    branches:
+      - master
 
 jobs:
-  build:
+  release:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [16.x]
+        node-version: [ 16.x ]
 
     steps:
+      - name: Checkout
       - uses: actions/checkout@v2
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
+          cache: 'yarn'
+      - name: Verify and Build
       - run: yarn install --frozen-lockfile
       - run: yarn verify
       - run: yarn build
       - run: yarn test
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+        run: yarn semantic-release
