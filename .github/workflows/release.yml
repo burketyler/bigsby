@@ -25,4 +25,4 @@ jobs:
       - run: yarn build
       - run: yarn test
       - name: Release
-        run: yarn semantic-release
+        run: yarn semantic-release --branches ci/semantic-release
