@@ -6271,10 +6271,10 @@ trim-off-newlines@^1.0.0:
   resolved "https://registry.yarnpkg.com/trim-off-newlines/-/trim-off-newlines-1.0.1.tgz#9f9ba9d9efa8764c387698bcbfeb2c848f11adb3"
   integrity sha1-n5up2e+odkw4dpi8v+sshI8RrbM=
 
-ts-injection@^1.1.8:
-  version "1.1.9"
-  resolved "https://registry.yarnpkg.com/ts-injection/-/ts-injection-1.1.9.tgz#5648b6c8b9eb2b6d97c31d0905745c6af3d9387a"
-  integrity sha512-tMsuwVG7/5MWg49EzfbERmDFSiXg6v3p5YbNOj6bX2Xyz+cn4zQcBusWHS33YezX+gtfxaHtkK+OKkadr8FB9w==
+ts-injection@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/ts-injection/-/ts-injection-1.2.0.tgz#f2bcd076332d4f02c5e0bbcfec4ca25f73368822"
+  integrity sha512-m/r7yMed0qqWhRDMSwN5kEIBTM9gVp6aw4VWFTDHNbBduL7F09UIR64IbRjCda/k8yBMpvWJFBMjZ7Nyb01SjA==
   dependencies:
     reflect-metadata "^0.1.13"
 
