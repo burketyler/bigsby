@@ -16,12 +16,13 @@
     "helpers"
   ],
   "scripts": {
-    "clean": "rm -rf .build",
-    "build": "yarn clean && tsc",
     "prettier": "prettier --write \"**/*.ts\" --loglevel error",
     "lint": "eslint -c src/**/*.ts",
-    "release": "yarn prettier && yarn lint && yarn build && yarn publish",
+    "verify": "yarn prettier && yarn lint",
+    "clean": "rm -rf .build",
+    "build": "yarn clean && tsc",
     "test": "jest",
+    "release": "yarn verify && yarn build && yarn publish",
     "cm": "git-cz"
   },
   "dependencies": {
@@ -43,6 +44,7 @@
     "husky": "^7.0.0",
     "jest": "^27.0.4",
     "prettier": "^2.3.1",
+    "semantic-release": "^17.4.4",
     "source-map-support": "^0.5.19",
     "ts-jest": "^27.0.3",
     "ts-node": "^10.0.0",
