@@ -1,5 +1,5 @@
 import { injectIntoClass } from "ts-injection";
-import { TsLambdaConfig } from "../domain/models/tsLambdaConfig";
+import { BigsbyConfig } from "../domain/models/bigsbyConfig";
 import { DynamoDB } from "aws-sdk";
 import { useConfig } from "../functions/useConfig";
 
@@ -13,7 +13,7 @@ export function DynamoClient(config?: DynamoDB.ClientConfiguration) {
   };
 }
 
-function createLocalClient(config: TsLambdaConfig): DynamoDB {
+function createLocalClient(config: BigsbyConfig): DynamoDB {
   return new DynamoDB({
     region: "localhost",
     endpoint: `http://localhost:${config.ddb?.localPort ?? "8000"}`,

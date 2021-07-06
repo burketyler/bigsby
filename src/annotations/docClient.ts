@@ -1,6 +1,6 @@
 import { injectIntoClass } from "ts-injection";
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
-import { TsLambdaConfig } from "../domain/models/tsLambdaConfig";
+import { BigsbyConfig } from "../domain/models/bigsbyConfig";
 import { useConfig } from "../functions/useConfig";
 
 export function DocClient(config?: DocumentClient.DocumentClientOptions) {
@@ -13,7 +13,7 @@ export function DocClient(config?: DocumentClient.DocumentClientOptions) {
   };
 }
 
-function createLocalClient(config: TsLambdaConfig): DocumentClient {
+function createLocalClient(config: BigsbyConfig): DocumentClient {
   return new DocumentClient({
     region: "localhost",
     endpoint: `http://localhost:${config.ddb?.localPort ?? "8000"}`,

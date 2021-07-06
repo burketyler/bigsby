@@ -1,17 +1,17 @@
 import * as fs from "fs";
 import * as path from "path";
-import { TsLambdaConfig } from "../domain/models/tsLambdaConfig";
+import { BigsbyConfig } from "../domain/models/bigsbyConfig";
 
-let config: TsLambdaConfig;
+let config: BigsbyConfig;
 
-export function useConfig(): TsLambdaConfig {
+export function useConfig(): BigsbyConfig {
   if (!config) {
     config = getConfig() ?? {};
   }
   return config;
 }
 
-function getConfig(): TsLambdaConfig | undefined {
+function getConfig(): BigsbyConfig | undefined {
   const appDir = fs.realpathSync(process.cwd());
   const configPath = path.join(appDir, "config.js");
   if (fs.existsSync(configPath)) {

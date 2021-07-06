@@ -1,16 +1,17 @@
 {
-  "name": "lambda-easy",
+  "name": "bigsby",
   "version": "0.1.1",
-  "description": "Typescript based AWS Lambda engine, making life easier.",
+  "description": "Typescript based AWS Lambda engine and helpers, making life easier.",
   "main": ".build/index.js",
   "author": "burketyler",
   "license": "MIT",
   "keywords": [
+    "bigsby",
     "lambda",
     "annotations",
     "decorate",
     "typescript",
-    "easy",
+    "aws",
     "framework",
     "engine",
     "helpers"
@@ -63,5 +64,15 @@
     "hooks": {
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
+  },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      ["@semantic-release/git", {
+        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+      }]
+    ]
   }
 }
