@@ -3,8 +3,15 @@
   "version": "0.1.1",
   "description": "Typescript based AWS Lambda engine and helpers, making life easier.",
   "main": ".build/index.js",
+  "types": ".build/index.d.ts",
   "author": "burketyler",
   "license": "MIT",
+  "files": [
+    ".build"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "keywords": [
     "bigsby",
     "lambda",
