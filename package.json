@@ -1,6 +1,6 @@
 {
   "name": "bigsby",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "Typescript based AWS Lambda engine and helpers, making life easier.",
   "main": ".build/index.js",
   "types": ".build/index.d.ts",
