@@ -1,27 +1,28 @@
 import { injectIntoClass } from "ts-injection";
-import { BigsbyConfig } from "../domain/models/bigsbyConfig";
 import { DynamoDB } from "aws-sdk";
-import { useConfig } from "../functions/useConfig";
+import { Bigsby } from "../classes/bigsby";
+import { DynamoConfig } from "../domain/models/bigsbyConfig";
+import merge from "lodash.merge";
 
-export function DynamoClient(config?: DynamoDB.ClientConfiguration) {
-  return (target: any, paramName: string) => {
-    const isLocal = process.env.IS_LOCAL;
-    const client = isLocal
-      ? createLocalClient(useConfig())
-      : createClient(config);
+export function DynamoClient(
+  config: DynamoConfig = {}
+): (target: Record<string, unknown>, paramName: string) => void {
+  return (target: Record<string, unknown>, paramName: string) => {
+    const mergedConfig: DynamoConfig = merge(Bigsby.getConfig().ddb, config);
+    const client = createClient(mergedConfig);
     injectIntoClass(target, paramName, client);
   };
 }
 
-function createLocalClient(config: BigsbyConfig): DynamoDB {
-  return new DynamoDB({
-    region: "localhost",
-    endpoint: `http://localhost:${config.ddb?.localPort ?? "8000"}`,
-    accessKeyId: "DEFAULT_ACCESS_KEY",
-    secretAccessKey: "DEFAULT_SECRET",
-  });
+function shouldCreateLocalClient(config: DynamoConfig): boolean {
+  return (
+    (process.env.IS_OFFLINE === "true" || process.env.IS_LOCAL === "true") &&
+    config.enableLocal === true
+  );
 }
 
-function createClient(config?: DynamoDB.ClientConfiguration): DynamoDB {
-  return new DynamoDB(config);
+function createClient(config: DynamoConfig): DynamoDB {
+  return new DynamoDB(
+    shouldCreateLocalClient(config) ? config.local : config.live
+  );
 }

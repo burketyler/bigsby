@@ -1,6 +1,5 @@
 import { LambdaHandler } from "../domain/models/lambdaHandler";
 import {
-  APIGatewayEventRequestContext,
   APIGatewayProxyEvent,
   APIGatewayProxyEventPathParameters,
   APIGatewayProxyEventQueryStringParameters,
@@ -8,30 +7,26 @@ import {
 import {
   HandlerExecuteMethod,
   META_REQUEST_MAPPING,
-  RequestMapTarget,
 } from "../domain/constants";
 import { APIGatewayProxyEventHeaders } from "aws-lambda/trigger/api-gateway-proxy";
-import { RawHandlerFn } from "../domain/models/rawHandlerFn";
-import { LambdaHandlerConfig } from "../domain/models/lambdaHandlerConfig";
 import { PrimitiveType } from "ts-injection";
 import { LambdaExecutionContext } from "../domain/models/lambdaExecutionContext";
 import { RequestMappingRule } from "../domain/models/requestMappingRule";
+import { RequestMapTarget } from "../domain/enums/requestMapTarget";
+import { Bigsby } from "../classes/bigsby";
+import { LambdaConfig } from "../domain/models/bigsbyConfig";
+import merge from "lodash.merge";
 
-export function applyRequestParamMapping(handler: LambdaHandler): void {
-  const handlerFn: Function = handler.execute;
-  (handler.execute as RawHandlerFn) = async (
-    event: APIGatewayProxyEvent,
-    context: APIGatewayEventRequestContext,
-    config: LambdaHandlerConfig
-  ) => {
-    const args = getRules(handler)
-      ?.sort(sortByParamIndex)
-      .reduce((argCollector: any[], rule) => {
-        argCollector.push(processRule(rule, { event, context, config }));
-        return argCollector;
-      }, []);
-    return await handlerFn.apply(handler, [config, ...(args ?? [])]);
-  };
+export function getArgsForHandlerParams(
+  context: LambdaExecutionContext,
+  handler: LambdaHandler
+): unknown[] {
+  return getRules(handler)
+    ?.sort(sortByParamIndex)
+    .reduce((argCollector: unknown[], rule) => {
+      argCollector.push(processRule(rule, context));
+      return argCollector;
+    }, []);
 }
 
 function sortByParamIndex(a: RequestMappingRule, b: RequestMappingRule) {
@@ -49,19 +44,20 @@ function getRules(handler: LambdaHandler): RequestMappingRule[] {
 function processRule(
   rule: RequestMappingRule,
   context: LambdaExecutionContext
-): any {
+): unknown {
   const event = context.event;
+  const config: LambdaConfig = merge(Bigsby.getConfig().lambda, context.config);
   switch (rule.mapTo) {
     case RequestMapTarget.CONTEXT:
       return context;
     case RequestMapTarget.BODY:
       return processBodyRule(event, context);
     case RequestMapTarget.PATH:
-      return processPathRule(event, rule, context);
+      return processPathRule(event, rule, config);
     case RequestMapTarget.QUERY:
-      return processQueryRule(event, rule, context);
+      return processQueryRule(event, rule, config);
     case RequestMapTarget.HEADER:
-      return processHeaderRule(event, rule, context);
+      return processHeaderRule(event, rule, config);
     default:
       throw new Error(`Unimplemented request map target: ${rule.mapTo}`);
   }
@@ -70,26 +66,28 @@ function processRule(
 function processPathRule(
   event: APIGatewayProxyEvent,
   rule: RequestMappingRule,
-  context: LambdaExecutionContext
+  config: LambdaConfig
 ): unknown | undefined {
   return parseAsType(
     rule,
     event.pathParameters?.[
       rule.searchKey as keyof APIGatewayProxyEventPathParameters
     ],
-    context
+    event.body,
+    config
   );
 }
 
 function processBodyRule(
   event: APIGatewayProxyEvent,
   context: LambdaExecutionContext
-): Object | string | null {
+): Record<string, unknown> | string | null {
   const contentType = getContentType(event.headers);
   switch (contentType) {
     case "application/json":
       return (
-        context.config?.jsonParser?.(event.body) ?? JSON.parse(event.body ?? "")
+        context.config?.request?.jsonParser?.(event.body) ??
+        JSON.parse(event.body ?? "")
       );
     default:
       return event.body;
@@ -105,45 +103,49 @@ function getContentType(
 function processQueryRule(
   event: APIGatewayProxyEvent,
   rule: RequestMappingRule,
-  context: LambdaExecutionContext
+  config: LambdaConfig
 ): unknown | undefined {
   return parseAsType(
     rule,
     event.queryStringParameters?.[
       rule.searchKey as keyof APIGatewayProxyEventQueryStringParameters
     ],
-    context
+    event.body,
+    config
   );
 }
 
 function processHeaderRule(
   event: APIGatewayProxyEvent,
   rule: RequestMappingRule,
-  context: LambdaExecutionContext
+  config: LambdaConfig
 ): unknown | string | undefined {
   return parseAsType(
     rule,
     event.headers?.[rule.searchKey as keyof APIGatewayProxyEventHeaders],
-    context
+    event.body,
+    config
   );
 }
 
 function parseAsType(
   rule: RequestMappingRule,
   value: string | undefined,
-  context: LambdaExecutionContext
-): unknown {
-  switch (rule.type) {
-    case PrimitiveType.NUMBER:
-      return Number(value);
-    case PrimitiveType.BOOLEAN:
-      return value === "true";
-    case PrimitiveType.OBJECT:
-      return (
-        context.config?.jsonParser?.(context.event.body) ??
-        JSON.parse(context.event.body ?? "")
-      );
-    default:
-      return value;
+  body: string | null,
+  config: LambdaConfig
+): number | boolean | Record<string, unknown> | string | undefined {
+  if (config.request?.enableInferType) {
+    switch (rule.type) {
+      case PrimitiveType.NUMBER:
+        return Number(value);
+      case PrimitiveType.BOOLEAN:
+        return value === "true";
+      case PrimitiveType.OBJECT:
+        return config.request?.jsonParser?.(body) ?? JSON.parse(body ?? "");
+      default:
+        return value;
+    }
+  } else {
+    return value;
   }
 }

@@ -1,7 +1,8 @@
 import "reflect-metadata";
-import { META_REQUEST_MAPPING, RequestMapTarget } from "../domain/constants";
+import { META_REQUEST_MAPPING } from "../domain/constants";
 import addRequestMappingRules from "./addRequestMappingRules";
 import { RequestMappingRule } from "../domain/models/requestMappingRule";
+import { RequestMapTarget } from "../domain/enums/requestMapTarget";
 
 describe("Function addRequestMappingRules tests", () => {
   let mockClass: any;
@@ -17,7 +18,7 @@ describe("Function addRequestMappingRules tests", () => {
 
   beforeEach(() => {
     mockClass = class {
-      constructor(test: number) {}
+      constructor() {}
     };
   });
 

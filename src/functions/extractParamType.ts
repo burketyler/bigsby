@@ -1,8 +1,8 @@
 export function extractParamType(
-  target: any,
+  target: Record<string, unknown>,
   paramName: string,
   paramIndex: number
-): () => any {
+): () => unknown {
   const paramType = Reflect.getMetadata(
     "design:paramtypes",
     target,

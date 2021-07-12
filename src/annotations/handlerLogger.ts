@@ -4,11 +4,11 @@ import {
   Newable,
   useInjectionContext,
 } from "ts-injection";
-import { InjectableType } from "../domain/constants";
+import { InjectableType } from "../domain/enums/injectableType";
 
 const { injectionCtx } = useInjectionContext();
 
-export function HandlerLogger<T extends Newable>(classCtor: T) {
+export function HandlerLogger<T extends Newable>(classCtor: T): void {
   const token = makeClassInjectable(classCtor);
   if (!token) {
     throw new Error(

@@ -1,13 +1,13 @@
-import { ApiGatewayLambdaResponse } from "./apiGatewayLambdaResponse";
+import { LambdaResponse } from "./lambdaResponse";
 
-export class Forbidden extends ApiGatewayLambdaResponse {
+export class Forbidden extends LambdaResponse {
   constructor(
-    body?: any,
-    statusCode: number = 403,
+    body?: unknown,
+    statusCode = 403,
     headers: {
       [key: string]: string;
     } = {},
-    isBase64Encoded: boolean = false
+    isBase64Encoded = false
   ) {
     super(body, statusCode, headers, isBase64Encoded);
   }

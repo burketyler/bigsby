@@ -2,11 +2,11 @@ import {
   APIGatewayEventRequestContext,
   APIGatewayProxyEvent,
 } from "aws-lambda";
-import { ApiGatewayLambdaResponse } from "../http/apiGatewayLambdaResponse";
-import { LambdaHandlerConfig } from "./lambdaHandlerConfig";
+import { LambdaResponse } from "../http/lambdaResponse";
+import { LambdaConfig } from "./bigsbyConfig";
 
 export type RawHandlerFn = (
   event: APIGatewayProxyEvent,
   context: APIGatewayEventRequestContext,
-  config: LambdaHandlerConfig
-) => Promise<ApiGatewayLambdaResponse>;
+  config: LambdaConfig
+) => Promise<LambdaResponse>;

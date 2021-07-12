@@ -2,24 +2,24 @@ import {
   APIGatewayEventRequestContext,
   APIGatewayProxyEvent,
 } from "aws-lambda";
-import { ApiGatewayLambdaResponse } from "../domain/http/apiGatewayLambdaResponse";
+import { LambdaResponse } from "../domain/http/lambdaResponse";
 import { register, resolve } from "ts-injection";
 import { TKN_CONTEXT } from "../domain/constants";
 import {
   LambdaHandler,
   LambdaHandlerConstructor,
 } from "../domain/models/lambdaHandler";
-import { LambdaHandlerConfig } from "../domain/models/lambdaHandlerConfig";
 import { LambdaExecutionContext } from "../domain/models/lambdaExecutionContext";
+import { LambdaConfig } from "../domain/models/bigsbyConfig";
 
 export function createHandler(
   app: LambdaHandlerConstructor,
-  config: LambdaHandlerConfig = {}
+  config: LambdaConfig = {}
 ) {
   return (
     event: APIGatewayProxyEvent,
     context: APIGatewayEventRequestContext
-  ): Promise<ApiGatewayLambdaResponse> => {
+  ): Promise<LambdaResponse> => {
     register<LambdaExecutionContext>(
       {
         event,

@@ -2,17 +2,17 @@ import { META_REQUEST_MAPPING } from "../domain/constants";
 import { RequestMappingRule } from "../domain/models/requestMappingRule";
 
 export default function addRequestMappingRules(
-  targetClass: any,
+  targetClass: Record<string, unknown>,
   paramName: string,
   rule: RequestMappingRule
-) {
+): void {
   const rules = getRulesOnTargetClass(targetClass, paramName);
   rules.push(rule);
   setRulesOnTargetClass(targetClass, paramName, rules);
 }
 
 function getRulesOnTargetClass(
-  targetClass: any,
+  targetClass: Record<string, unknown>,
   paramName: string
 ): RequestMappingRule[] {
   return (
@@ -25,7 +25,7 @@ function getRulesOnTargetClass(
 }
 
 function setRulesOnTargetClass(
-  targetClass: any,
+  targetClass: Record<string, unknown>,
   paramName: string,
   rules: RequestMappingRule[]
 ): void {

@@ -1,10 +1,20 @@
 import "reflect-metadata";
-import { RequestMapTarget } from "../domain/constants";
 import applyRequestMappingMetadata from "../functions/addRequestMappingRules";
 import { extractParamType } from "../functions/extractParamType";
+import { RequestMapTarget } from "../domain/enums/requestMapTarget";
 
-export function Header(name: string) {
-  return (target: any, paramName: string, paramIndex: number) => {
+export function Header(
+  name: string
+): (
+  target: Record<string, unknown>,
+  paramName: string,
+  paramIndex: number
+) => void {
+  return (
+    target: Record<string, unknown>,
+    paramName: string,
+    paramIndex: number
+  ) => {
     applyRequestMappingMetadata(target, paramName, {
       paramIndex,
       mapTo: RequestMapTarget.HEADER,

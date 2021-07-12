@@ -1,13 +1,13 @@
-import { ApiGatewayLambdaResponse } from "./apiGatewayLambdaResponse";
+import { LambdaResponse } from "./lambdaResponse";
 
-export class OkResponse extends ApiGatewayLambdaResponse {
+export class OkResponse extends LambdaResponse {
   constructor(
-    body?: any,
-    statusCode: number = 200,
+    body?: unknown,
+    statusCode = 200,
     headers: {
       [key: string]: string;
     } = {},
-    isBase64Encoded: boolean = false
+    isBase64Encoded = false
   ) {
     super(body, statusCode, headers, isBase64Encoded);
   }

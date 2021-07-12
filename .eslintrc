@@ -1,6 +1,24 @@
 {
+  "ignorePatterns": [
+    "*.md"
+  ],
   "parser": "@typescript-eslint/parser",
   "plugins": [
     "@typescript-eslint"
+  ],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "rules": {
+    "@typescript-eslint/no-empty-function": "off"
+  },
+  "overrides": [
+    {
+      "files": "*.test.*",
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    }
   ]
 }

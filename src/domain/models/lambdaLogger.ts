@@ -1,7 +1,13 @@
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type LogFn = (msg: string, ...args: any[]) => void | unknown;
+
 export interface LambdaLogger {
-  info(msg: string, ...args: any[]): void | any;
-  debug(msg: string, ...args: any[]): void | any;
-  error(msg: string, ...args: any[]): void | any;
+  fatal: LogFn;
+  error: LogFn;
+  warn: LogFn;
+  info: LogFn;
+  debug: LogFn;
+  trace: LogFn;
 }
 
 export interface LambdaLoggerConstructor {

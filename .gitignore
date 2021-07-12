@@ -8,5 +8,5 @@ jspm_packages
 yarn-error.log
 .build
 
-# Serverless directories
-.serverless
+# Build directories
+.build

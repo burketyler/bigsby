@@ -2,10 +2,10 @@ import {
   APIGatewayEventRequestContext,
   APIGatewayProxyEvent,
 } from "aws-lambda";
-import { LambdaHandlerConfig } from "./lambdaHandlerConfig";
+import { LambdaConfig } from "./bigsbyConfig";
 
 export interface LambdaExecutionContext {
   context: APIGatewayEventRequestContext;
   event: APIGatewayProxyEvent;
-  config: LambdaHandlerConfig;
+  config: LambdaConfig;
 }
