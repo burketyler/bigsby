@@ -72,6 +72,8 @@ export class JwtAuthorizer implements LambdaAuthorizer {
         (requestAuthCtx: APIGatewayAuthorizerResultContext, [key, value]) => {
           if (this.isPrimitive(value)) {
             requestAuthCtx[key] = value;
+          } else if (Array.isArray(value)) {
+            requestAuthCtx[key] = value.join(",");
           }
           return requestAuthCtx;
         },

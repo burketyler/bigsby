@@ -18,6 +18,7 @@ export * from "./src/domain/http/forbidden";
 export * from "./src/domain/http/internalServerError";
 export * from "./src/domain/http/okResponse";
 
+export * from "./src/domain/enums/scopeFormat";
 export * from "./src/domain/models/effectStatement";
 export * from "./src/domain/models/jwtAuthorizerConfig";
 export * from "./src/domain/models/lambdaAuthorizer";
