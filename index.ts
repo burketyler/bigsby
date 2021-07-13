@@ -7,6 +7,7 @@ export * from "./src/annotations/handlerLogger";
 export * from "./src/annotations/header";
 export * from "./src/annotations/path";
 export * from "./src/annotations/query";
+export * from "./src/annotations/scopes";
 
 export * from "./src/domain/errors/entitlementsError";
 export * from "./src/domain/errors/validationError";

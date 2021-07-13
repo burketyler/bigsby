@@ -43,9 +43,9 @@ export interface LambdaConfig {
     };
   };
   hooks?: {
-    onHandlerInit?: (handler: LambdaHandler) => void;
-    beforeExecute?: (context: LambdaExecutionContext) => void;
-    afterExecute?: (response: LambdaResponse) => void;
+    onHandlerInit?: (handler: LambdaHandler) => LambdaHandler;
+    beforeExecute?: (context: LambdaExecutionContext) => LambdaExecutionContext;
+    afterExecute?: (response: LambdaResponse) => LambdaResponse;
     onErr?: (err: Error) => void;
     onUnhandledErr?: (err: Error) => void;
     onValidationErr?: (err: ValidationError) => void;

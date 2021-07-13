@@ -6,7 +6,8 @@ import merge from "lodash.merge";
 
 export function DynamoClient(
   config: DynamoConfig = {}
-): (target: Record<string, unknown>, paramName: string) => void {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+): (target: any, paramName: string) => void {
   return (target: Record<string, unknown>, paramName: string) => {
     const mergedConfig: DynamoConfig = merge(Bigsby.getConfig().ddb, config);
     const client = createClient(mergedConfig);

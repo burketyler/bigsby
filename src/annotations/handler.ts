@@ -24,63 +24,76 @@ import { InternalServerError } from "../domain/http/internalServerError";
 import { BigsbyError } from "../domain/errors/bigsbyError";
 import { InjectableItemModel } from "ts-injection/.build/src/domain/model/injectableItem.model";
 import { getLogger } from "../functions/getLogger";
+import { META_SCOPES } from "../domain/constants";
+import { validateRequiredScopes } from "../functions/validateRequiredScopes";
 
 const { injectionCtx } = useInjectionContext();
 
 export function Handler<T extends Newable>(classCtor: T): void {
   const handler = initializeHandler(classCtor);
-  Bigsby.getConfig().lambda?.hooks?.onHandlerInit?.(handler);
-  wrapHandlerExecute(handler);
+  const mutatedHandler =
+    Bigsby.getConfig().lambda?.hooks?.onHandlerInit?.(handler);
+  wrapHandlerExecute(
+    mutatedHandler ?? handler,
+    getScopesFromHandlerClass(classCtor)
+  );
 }
 
-function wrapHandlerExecute(handler: LambdaHandler): void {
+function getScopesFromHandlerClass(classCtor: Newable): string[] {
+  return Reflect.getOwnMetadata(META_SCOPES, classCtor) ?? [];
+}
+
+function wrapHandlerExecute(
+  handler: LambdaHandler,
+  requiredScopes: string[]
+): void {
   const handlerFn: RawHandlerFn = handler.execute;
   handler.execute = async (
     event: APIGatewayProxyEvent,
     eventContext: APIGatewayEventRequestContext,
     config: LambdaConfig
   ) => {
-    const context: LambdaExecutionContext = {
+    const executionContext: LambdaExecutionContext = {
       event,
       context: eventContext,
       config: merge(Bigsby.getConfig().lambda, config),
     };
-    context.config.hooks?.beforeExecute?.(context);
-    return await applyExecuteTransforms(handler, handlerFn, context);
+    try {
+      const mutatedExeCtx =
+        executionContext.config.hooks?.beforeExecute?.(executionContext);
+      validateRequiredScopes(mutatedExeCtx ?? executionContext, requiredScopes);
+      return await applyExecuteTransforms(handler, handlerFn, executionContext);
+    } catch (err) {
+      executionContext.config.hooks?.onErr?.(err);
+      const res = getLambdaResponseForError(err, executionContext.config);
+      return addSecurityHeaders(res, executionContext);
+    }
   };
 }
 
 function applyExecuteTransforms(
   handler: LambdaHandler,
   handlerFn: LambdaExecuteFn,
-  context: LambdaExecutionContext
+  executionContext: LambdaExecutionContext
 ): Promise<LambdaResponse> {
   return handlerFn
-    .apply(handler, [
-      context,
-      ...(getArgsForHandlerParams(context, handler) ?? []),
-    ])
+    .apply(handler, getArgsForHandlerParams(executionContext, handler) ?? [])
     .then((res) => {
-      return context.config.response?.enableAutoContentType
+      return executionContext.config.response?.enableAutoContentType
         ? addInferredContentTypeBody(res)
         : res;
     })
     .then((res) => {
-      return context.config.response?.enableAutoHeaders
-        ? addSecurityHeaders(res, context)
+      return executionContext.config.response?.enableAutoHeaders
+        ? addSecurityHeaders(res, executionContext)
         : res;
     })
     .then((res) => {
-      return addAdditionalHeaders(res, context);
+      return addAdditionalHeaders(res, executionContext);
     })
     .then((res) => {
-      context.config.hooks?.afterExecute?.(res);
-      return res;
-    })
-    .catch((err) => {
-      context.config.hooks?.onErr?.(err);
-      const res = getLambdaResponseForError(err, context.config);
-      return addSecurityHeaders(res, context);
+      const mutatedRes = executionContext.config.hooks?.afterExecute?.(res);
+      return mutatedRes ?? res;
     });
 }
 
