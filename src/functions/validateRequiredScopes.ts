@@ -6,6 +6,9 @@ export function validateRequiredScopes(
   executionContext: LambdaExecutionContext,
   requiredScopes: string[]
 ): void {
+  if (requiredScopes.length === 0) {
+    return;
+  }
   /* eslint-disable @typescript-eslint/no-non-null-assertion */
   const scopesFieldName = executionContext.config.auth!.scopes!.fieldName!;
   const delimiter = executionContext.config.auth!.scopes!.delimiter!;
