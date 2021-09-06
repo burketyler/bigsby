@@ -1,30 +1,29 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.JwtAuthorizer = void 0;
-const tslib_1 = require("tslib");
 const jsonwebtoken_1 = require("jsonwebtoken");
 const ts_injection_1 = require("ts-injection");
-let JwtAuthorizer = class JwtAuthorizer {
-    constructor() { }
-    authorize(context, config) {
-        var _a, _b, _c;
+class JwtAuthorizer {
+    constructor(config) {
+        this.config = config;
+        if (config.logger) {
+            this.logger = ts_injection_1.resolve(config.logger);
+        }
+    }
+    authorize(context) {
+        var _a, _b, _c, _d;
         try {
-            if (config.logger) {
-                this.logger = config.logger
-                    ? ts_injection_1.resolve(config.logger)
-                    : undefined;
-            }
-            const decoded = this.verifyAndExtractJwtPayload(context, config);
-            (_a = config.verifyDecoded) === null || _a === void 0 ? void 0 : _a.call(config, decoded);
+            const decoded = this.verifyAndExtractJwtPayload(context, this.config);
+            (_b = (_a = this.config).verifyDecoded) === null || _b === void 0 ? void 0 : _b.call(_a, decoded);
             const authContext = this.extractAuthContext(decoded);
             const methodArn = this.parseMethodArn(context);
-            const policyStatements = this.generatePolicyStatements(methodArn, config);
-            const result = this.createAuthorizerResult(policyStatements, authContext, config);
-            (_b = this.logger) === null || _b === void 0 ? void 0 : _b.info("User authorized successfully.", result);
+            const policyStatements = this.generatePolicyStatements(methodArn, this.config);
+            const result = this.createAuthorizerResult(policyStatements, authContext, this.config);
+            (_c = this.logger) === null || _c === void 0 ? void 0 : _c.info("User authorized successfully.", result);
             return result;
         }
         catch (err) {
-            (_c = this.logger) === null || _c === void 0 ? void 0 : _c.error("User authorization failed.", err);
+            (_d = this.logger) === null || _d === void 0 ? void 0 : _d.error("User authorization failed.", err);
             context.callback("Unauthorized");
             return;
         }
@@ -101,9 +100,5 @@ let JwtAuthorizer = class JwtAuthorizer {
             context: requestAuthCtx,
         };
     }
-};
-JwtAuthorizer = tslib_1.__decorate([
-    ts_injection_1.Injectable,
-    tslib_1.__metadata("design:paramtypes", [])
-], JwtAuthorizer);
+}
 exports.JwtAuthorizer = JwtAuthorizer;
