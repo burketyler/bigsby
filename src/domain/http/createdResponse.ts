@@ -1,6 +1,6 @@
 import { LambdaResponse } from "./lambdaResponse";
 
-export class OkResponse extends LambdaResponse {
+export class CreatedResponse extends LambdaResponse {
   constructor(
     body?: unknown,
     statusCode = 201,
