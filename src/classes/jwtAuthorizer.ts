@@ -11,34 +11,34 @@ import {
 } from "aws-lambda";
 import { ParsedMethodArn } from "../domain/models/parsedMethodArn";
 import { JwtAuthorizerConfig } from "../domain/models/jwtAuthorizerConfig";
-import { Injectable, resolve } from "ts-injection";
 import { LambdaLogger } from "../domain/models/lambdaLogger";
+import { resolve } from "ts-injection";
 
-@Injectable
 export class JwtAuthorizer implements LambdaAuthorizer {
   private logger?: LambdaLogger;
 
-  constructor() {}
+  constructor(private config: JwtAuthorizerConfig) {
+    if (config.logger) {
+      this.logger = resolve(config.logger);
+    }
+  }
 
   public authorize(
-    context: AuthorizerContext<APIGatewayTokenAuthorizerEvent>,
-    config: JwtAuthorizerConfig
+    context: AuthorizerContext<APIGatewayTokenAuthorizerEvent>
   ): APIGatewayAuthorizerResult | void {
     try {
-      if (config.logger) {
-        this.logger = config.logger
-          ? resolve<LambdaLogger>(config.logger)
-          : undefined;
-      }
-      const decoded = this.verifyAndExtractJwtPayload(context, config);
-      config.verifyDecoded?.(decoded);
+      const decoded = this.verifyAndExtractJwtPayload(context, this.config);
+      this.config.verifyDecoded?.(decoded);
       const authContext = this.extractAuthContext(decoded);
       const methodArn = this.parseMethodArn(context);
-      const policyStatements = this.generatePolicyStatements(methodArn, config);
+      const policyStatements = this.generatePolicyStatements(
+        methodArn,
+        this.config
+      );
       const result = this.createAuthorizerResult(
         policyStatements,
         authContext,
-        config
+        this.config
       );
       this.logger?.info("User authorized successfully.", result);
       return result;

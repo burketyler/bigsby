@@ -3,12 +3,8 @@ import {
   APIGatewayEventRequestContext,
   APIGatewayTokenAuthorizerEvent,
 } from "aws-lambda";
-import {
-  LambdaAuthorizer,
-  LambdaAuthorizerConstructor,
-} from "../domain/models/lambdaAuthorizer";
+import { LambdaAuthorizerConstructor } from "../domain/models/lambdaAuthorizer";
 import { JwtAuthorizerConfig } from "../domain/models/jwtAuthorizerConfig";
-import { resolve } from "ts-injection";
 
 export function createAuthorizer(
   Authorizer: LambdaAuthorizerConstructor,
@@ -19,9 +15,10 @@ export function createAuthorizer(
     context: APIGatewayEventRequestContext,
     callback: () => void
   ): APIGatewayAuthorizerResult | void => {
-    return resolve<LambdaAuthorizer>(Authorizer).authorize(
-      { context, event, callback },
-      config
-    );
+    return new Authorizer(config).authorize({
+      context,
+      event,
+      callback,
+    });
   };
 }
