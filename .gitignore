@@ -6,7 +6,5 @@
 node_modules
 jspm_packages
 yarn-error.log
-.build
 
 # Build directories
-.build
