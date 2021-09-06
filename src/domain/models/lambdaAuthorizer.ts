@@ -2,7 +2,6 @@ import {
   APIGatewayAuthorizerEvent,
   APIGatewayAuthorizerResult,
   APIGatewayEventRequestContext,
-  APIGatewayTokenAuthorizerEvent,
 } from "aws-lambda";
 import { JwtAuthorizerConfig } from "./jwtAuthorizerConfig";
 
@@ -13,15 +12,9 @@ export interface AuthorizerContext<EventType = APIGatewayAuthorizerEvent> {
 }
 
 export interface LambdaAuthorizerConstructor {
-  new (
-    context: AuthorizerContext<APIGatewayTokenAuthorizerEvent>,
-    config: JwtAuthorizerConfig
-  ): LambdaAuthorizer;
+  new (config: JwtAuthorizerConfig): LambdaAuthorizer;
 }
 
 export interface LambdaAuthorizer {
-  authorize(
-    context: AuthorizerContext,
-    config: JwtAuthorizerConfig
-  ): APIGatewayAuthorizerResult | void;
+  authorize(context: AuthorizerContext): APIGatewayAuthorizerResult | void;
 }
