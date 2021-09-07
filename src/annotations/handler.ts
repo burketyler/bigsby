@@ -31,8 +31,10 @@ const { injectionCtx } = useInjectionContext();
 
 export function Handler<T extends Newable>(classCtor: T): void {
   const handler = initializeHandler(classCtor);
+
   const mutatedHandler =
     Bigsby.getConfig().lambda?.hooks?.onHandlerInit?.(handler);
+
   wrapHandlerExecute(
     mutatedHandler ?? handler,
     getScopesFromHandlerClass(classCtor)
@@ -48,6 +50,7 @@ function wrapHandlerExecute(
   requiredScopes: string[]
 ): void {
   const handlerFn: RawHandlerFn = handler.execute;
+
   handler.execute = async (
     event: APIGatewayProxyEvent,
     eventContext: APIGatewayEventRequestContext,
@@ -58,14 +61,22 @@ function wrapHandlerExecute(
       context: eventContext,
       config: merge(Bigsby.getConfig().lambda, config),
     };
+
     try {
-      const mutatedExeCtx =
+      const mutatedExecutionContext =
         executionContext.config.hooks?.beforeExecute?.(executionContext);
-      validateRequiredScopes(mutatedExeCtx ?? executionContext, requiredScopes);
+
+      validateRequiredScopes(
+        mutatedExecutionContext ?? executionContext,
+        requiredScopes
+      );
+
       return await applyExecuteTransforms(handler, handlerFn, executionContext);
     } catch (err) {
       executionContext.config.hooks?.onErr?.(err);
+
       const res = getLambdaResponseForError(err, executionContext.config);
+
       return addSecurityHeaders(res, executionContext);
     }
   };
@@ -99,10 +110,12 @@ function applyExecuteTransforms(
 
 function initializeHandler(classCtor: Newable): LambdaHandler {
   const logger = getLogger();
+
   try {
     return getHandlerFromInjectionContext(makeClassInjectable(classCtor));
   } catch (error) {
     logger?.error("Unable to initialize handler class.", error);
+
     return {
       execute: async () => {
         return new InternalServerError();
@@ -113,11 +126,13 @@ function initializeHandler(classCtor: Newable): LambdaHandler {
 
 function getHandlerFromInjectionContext(token?: string): LambdaHandler {
   let item: InjectableItemModel<LambdaHandler> | undefined;
+
   if (token) {
     item = injectionCtx.findItemByToken(token);
     if (item) {
       return item.value;
     }
   }
+
   throw new BigsbyError("Can't get handler from injection context.");
 }
