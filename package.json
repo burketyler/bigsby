@@ -34,7 +34,9 @@
     "cm": "git-cz"
   },
   "dependencies": {
+    "got": "^11.8.2",
     "jsonwebtoken": "^8.5.1",
+    "jwk-to-pem": "^2.0.5",
     "lodash.merge": "^4.6.2",
     "reflect-metadata": "^0.1.13",
     "ts-injection": "^1.2.0"
@@ -47,6 +49,7 @@
     "@types/aws-lambda": "^8.10.77",
     "@types/jest": "^26.0.23",
     "@types/jsonwebtoken": "^8.5.2",
+    "@types/jwk-to-pem": "^2.0.1",
     "@types/lodash.merge": "^4.6.6",
     "@types/serverless": "^1.78.31",
     "@typescript-eslint/eslint-plugin": "^4.27.0",

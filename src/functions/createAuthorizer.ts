@@ -4,17 +4,22 @@ import {
   APIGatewayTokenAuthorizerEvent,
 } from "aws-lambda";
 import { LambdaAuthorizerConstructor } from "../domain/models/lambdaAuthorizer";
-import { JwtAuthorizerConfig } from "../domain/models/jwtAuthorizerConfig";
+import {
+  JwksAuthorizerConfig,
+  JwtAuthorizerConfig,
+} from "../classes/authorizers";
 
-export function createAuthorizer(
-  Authorizer: LambdaAuthorizerConstructor,
-  config: JwtAuthorizerConfig
+export type AuthorizerConfig = JwksAuthorizerConfig | JwtAuthorizerConfig;
+
+export function createAuthorizer<ConfigType extends AuthorizerConfig>(
+  Authorizer: LambdaAuthorizerConstructor<ConfigType>,
+  config: ConfigType
 ) {
   return (
     event: APIGatewayTokenAuthorizerEvent,
     context: APIGatewayEventRequestContext,
     callback: () => void
-  ): APIGatewayAuthorizerResult | void => {
+  ): Promise<APIGatewayAuthorizerResult | void> => {
     return new Authorizer(config).authorize({
       context,
       event,
