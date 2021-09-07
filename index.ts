@@ -36,7 +36,6 @@ export * from "./src/domain/http/unauthorizedResponse";
 export * from "./src/domain/http/unsupportedMediaResponse";
 
 export * from "./src/domain/models/effectStatement";
-export * from "./src/domain/models/jwtAuthorizerConfig";
 export * from "./src/domain/models/lambdaAuthorizer";
 export * from "./src/domain/models/lambdaExecutionContext";
 export * from "./src/domain/models/lambdaHandler";
@@ -46,7 +45,7 @@ export * from "./src/domain/models/bigsbyConfig";
 export * from "./src/functions/createHandler";
 export * from "./src/functions/createAuthorizer";
 
-export * from "./src/classes/jwtAuthorizer";
+export * from "./src/classes/authorizers";
 export * from "./src/classes/bigsby";
 
 export {

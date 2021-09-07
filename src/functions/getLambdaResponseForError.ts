@@ -13,6 +13,7 @@ export function getLambdaResponseForError(
   config?: LambdaConfig
 ): LambdaResponse {
   const logger = getLogger();
+
   if (err instanceof ValidationError) {
     return processValidationErr(err, logger, config);
   } else if (err instanceof EntitlementsError) {
@@ -28,7 +29,9 @@ function processValidationErr(
   config?: LambdaConfig
 ): LambdaResponse {
   logger?.error(`${err.name}: ${err.message}`);
+
   config?.hooks?.onValidationErr?.(err);
+
   return new BadRequest(JSON.stringify(err.data));
 }
 
@@ -38,7 +41,9 @@ function processEntitlementsErr(
   config?: LambdaConfig
 ): LambdaResponse {
   logger?.error(`${err.name}: ${err.message}`);
+
   config?.hooks?.onEntitlementsErr?.(err);
+
   return new Forbidden(JSON.stringify(err.data));
 }
 
@@ -48,6 +53,8 @@ function processUnhandledErr(
   config?: LambdaConfig
 ): LambdaResponse {
   logger?.error("Unhandled exception occurred:", err);
+
   config?.hooks?.onUnhandledErr?.(err);
+
   return new InternalServerError();
 }
