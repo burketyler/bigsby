@@ -11,12 +11,6 @@ export const defaultConfig: BigsbyConfig = {
     },
   },
   lambda: {
-    auth: {
-      scopes: {
-        fieldName: "scopes",
-        delimiter: " ",
-      },
-    },
     error: {
       enableAutoErrorHandling: true,
     },

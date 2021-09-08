@@ -4,7 +4,6 @@ import { EntitlementsError } from "../errors/entitlementsError";
 import { LambdaExecutionContext } from "./lambdaExecutionContext";
 import { LambdaResponse } from "../http/lambdaResponse";
 import { LambdaHandler } from "./lambdaHandler";
-import { APIGatewayEventRequestContext } from "aws-lambda";
 
 export interface BigsbyConfig {
   ddb?: DynamoConfig;
@@ -20,9 +19,7 @@ export interface DynamoConfig {
 export interface LambdaConfig {
   auth?: {
     scopes?: {
-      fieldName?: string;
-      delimiter?: string;
-      extractScopes?: (context: APIGatewayEventRequestContext) => string[];
+      extractScopes?: (context: LambdaExecutionContext) => string[];
     };
   };
   error?: {

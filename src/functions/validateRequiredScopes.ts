@@ -9,30 +9,31 @@ export function validateRequiredScopes(
   if (requiredScopes.length === 0) {
     return;
   }
-  /* eslint-disable @typescript-eslint/no-non-null-assertion */
-  const scopesFieldName = executionContext.config.auth!.scopes!.fieldName!;
-  const delimiter = executionContext.config.auth!.scopes!.delimiter!;
-  /* eslint-enable @typescript-eslint/no-non-null-assertion */
-  const userScopes =
-    executionContext.config.auth?.scopes?.extractScopes?.(
-      executionContext.context
-    ) ?? getUserScopes(executionContext, scopesFieldName, delimiter);
+
+  let userScopes: string[];
+
+  const extractScopes = executionContext.config.auth?.scopes?.extractScopes;
+
+  if (extractScopes) {
+    userScopes = extractScopes(executionContext);
+  } else {
+    userScopes = getUserScopes(executionContext);
+  }
+
   validateMissingScopes(userScopes, requiredScopes);
 }
 
-function getUserScopes(
-  executionContext: LambdaExecutionContext,
-  scopesFieldName: string,
-  delimiter: string
-): string[] {
+function getUserScopes(executionContext: LambdaExecutionContext): string[] {
   const userScopes: string =
-    executionContext.context.authorizer?.[scopesFieldName];
+    executionContext.event.requestContext.authorizer?.jwt.scopes;
+
   if (!userScopes) {
     throw new BigsbyError(
-      `Invalid user scopes: context.authorizer.${scopesFieldName} is undefined or not of type string`
+      `Invalid user scopes: event.requestContext.authorizer.jwt.scopes is undefined or not of type string`
     );
   }
-  return userScopes.split(delimiter);
+
+  return userScopes.split(" ");
 }
 
 function validateMissingScopes(
@@ -40,6 +41,7 @@ function validateMissingScopes(
   requiredScopes: string[]
 ): void {
   const missingScopes = extractMissingScopes(userScopes, requiredScopes);
+
   if (missingScopes.length > 0) {
     throw new EntitlementsError(
       `User is missing the following required scopes: ${missingScopes}.`
@@ -55,6 +57,7 @@ function extractMissingScopes(
     if (!userScopes.some((usrScope) => usrScope === reqScope)) {
       missingScopes.push(reqScope);
     }
+
     return missingScopes;
   }, []);
 }
