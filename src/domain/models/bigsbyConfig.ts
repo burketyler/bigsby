@@ -6,11 +6,12 @@ import { LambdaResponse } from "../http/lambdaResponse";
 import { LambdaHandler } from "./lambdaHandler";
 
 export interface BigsbyConfig {
-  ddb?: DynamoConfig;
+  ddb?: DdbConfig;
   lambda?: LambdaConfig;
 }
 
-export interface DynamoConfig {
+export interface DdbConfig {
+  tableName?: string;
   live?: DynamoDB.ClientConfiguration;
   local?: DynamoDB.ClientConfiguration;
   enableLocal?: boolean;

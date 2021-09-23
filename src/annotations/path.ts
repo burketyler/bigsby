@@ -17,6 +17,7 @@ export function Path(
     paramIndex: number
   ) => {
     const paramNames = getFunctionParamNames(target[paramName]);
+
     applyRequestMappingMetadata(target, paramName, {
       paramIndex,
       mapTo: RequestMapTarget.PATH,

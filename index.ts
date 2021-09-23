@@ -1,7 +1,6 @@
 export * from "./src/annotations/body";
 export * from "./src/annotations/context";
-export * from "./src/annotations/docClient";
-export * from "./src/annotations/dynamoClient";
+export * from "./src/annotations/ddb";
 export * from "./src/annotations/handler";
 export * from "./src/annotations/handlerLogger";
 export * from "./src/annotations/header";
@@ -11,6 +10,8 @@ export * from "./src/annotations/scopes";
 
 export * from "./src/domain/errors/entitlementsError";
 export * from "./src/domain/errors/validationError";
+export * from "./src/domain/errors/bigsbyError";
+export * from "./src/domain/errors/condition-check-failed-error";
 
 export * from "./src/domain/http/lambdaResponse";
 export * from "./src/domain/http/badRequest";
@@ -44,9 +45,11 @@ export * from "./src/domain/models/bigsbyConfig";
 
 export * from "./src/functions/createHandler";
 export * from "./src/functions/createAuthorizer";
+export * from "./src/functions/env";
 
 export * from "./src/classes/authorizers";
 export * from "./src/classes/bigsby";
+export * from "./src/classes/dynamo-client";
 
 export {
   resolve,

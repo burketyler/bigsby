@@ -5,8 +5,8 @@ export function getFunctionParamNames(fn: unknown): string[] {
       .replace(/((\/\/.*$)|(\/\*[\s\S]*?\*\/))/gm, "");
     const argDecl = fnText.match(/^async execute\s*[^(]*\(\s*([^)]*)\)/m);
     return (
-      argDecl?.slice(1).reduce((paramNames: string[], arg) => {
-        paramNames.push(arg);
+      argDecl?.[1]?.split(",").reduce((paramNames: string[], arg) => {
+        paramNames.push(arg.trim());
         return paramNames;
       }, []) ?? []
     );

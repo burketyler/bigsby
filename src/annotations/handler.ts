@@ -77,7 +77,10 @@ function wrapHandlerExecute(
 
       const res = getLambdaResponseForError(err, executionContext.config);
 
-      return addSecurityHeaders(res, executionContext);
+      return addAdditionalHeaders(
+        addSecurityHeaders(res, executionContext),
+        executionContext
+      );
     }
   };
 }
