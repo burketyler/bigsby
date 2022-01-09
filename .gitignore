@@ -9,3 +9,6 @@ yarn-error.log
 
 # Build directories
 .build
+
+# Testing
+coverage

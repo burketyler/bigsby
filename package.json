@@ -1,7 +1,7 @@
 {
   "name": "bigsby",
   "version": "1.2.0",
-  "description": "Typescript based AWS Lambda engine and helpers, making life easier.",
+  "description": "Typescript based AWS Lambda middleware and annotations, making life easier.",
   "main": ".build/index.js",
   "types": ".build/index.d.ts",
   "author": "burketyler",
@@ -15,60 +15,67 @@
   "keywords": [
     "bigsby",
     "lambda",
+    "functions",
     "annotations",
     "decorate",
     "typescript",
     "aws",
     "framework",
-    "engine",
-    "helpers"
+    "middleware"
   ],
   "scripts": {
-    "prettier": "prettier --check \"**/*.ts\" --loglevel error",
-    "lint": "eslint -c ./.eslintrc src/**/*.ts",
-    "verify": "yarn prettier && yarn lint",
+    "prettier:check": "prettier --check src/**/*.ts --loglevel error",
+    "prettier:fix": "prettier --write src/**/*.ts",
+    "lint:check": "eslint -c .eslintrc src/**/*.ts",
+    "lint:fix": "eslint --fix -c .eslintrc src/**/*.ts",
+    "code:check": "yarn prettier:check && yarn lint:check",
+    "code:fix": "yarn prettier:fix && yarn lint:fix",
     "clean": "rm -rf .build",
     "build": "yarn clean && tsc",
     "test": "jest",
-    "release": "yarn verify && yarn build && yarn publish",
-    "cm": "git-cz"
+    "precommit": "yarn code:fix",
+    "docs": "(cd docs && yarn start)",
+    "cm": "git-cz",
+    "prepare": "husky install"
   },
   "dependencies": {
-    "got": "^11.8.2",
-    "jsonwebtoken": "^8.5.1",
-    "jwk-to-pem": "^2.0.5",
-    "lodash.merge": "^4.6.2",
-    "reflect-metadata": "^0.1.13",
-    "ts-injection": "^1.2.0"
+    "joi": "17.5.0",
+    "lodash.merge": "4.6.2",
+    "pino": "7.6.2",
+    "ts-injection": "2.0.2",
+    "tslib": "2.3.1"
   },
   "peerDependencies": {
-    "serverless": "^2.51.0"
+    "aws-sdk": "2.1001.0"
   },
   "devDependencies": {
-    "@semantic-release/git": "^9.0.0",
-    "@types/aws-lambda": "^8.10.77",
-    "@types/jest": "^26.0.23",
-    "@types/jsonwebtoken": "^8.5.2",
-    "@types/jwk-to-pem": "^2.0.1",
-    "@types/lodash.merge": "^4.6.6",
-    "@types/serverless": "^1.78.31",
-    "@typescript-eslint/eslint-plugin": "^4.27.0",
-    "@typescript-eslint/parser": "^4.27.0",
-    "aws-sdk": "^2.931.0",
-    "commitizen": "^4.2.4",
-    "commitlint": "^12.1.4",
-    "cz-customizable": "^6.3.0",
-    "eslint": "^7.30.0",
-    "husky": "^7.0.0",
-    "jest": "^27.0.4",
-    "json-schema-to-openapi-schema": "^0.4.0",
-    "prettier": "^2.3.1",
-    "semantic-release": "^17.4.4",
-    "source-map-support": "^0.5.19",
-    "ts-jest": "^27.0.3",
-    "ts-node": "^10.0.0",
-    "tslib": "^2.3.0",
-    "typescript": "^4.3.4"
+    "@commitlint/config-conventional": "16.0.0",
+    "@semantic-release/changelog": "6.0.1",
+    "@semantic-release/git": "10.0.1",
+    "@types/aws-lambda": "8.10.89",
+    "@types/jest": "27.4.0",
+    "@types/lodash.merge": "4.6.6",
+    "@typescript-eslint/eslint-plugin": "5.9.0",
+    "@typescript-eslint/parser": "5.9.0",
+    "aws-sdk": "2.1001.0",
+    "commitizen": "4.2.4",
+    "commitlint": "16.0.1",
+    "cz-customizable": "6.3.0",
+    "eslint": "8.6.0",
+    "eslint-config-airbnb": "19.0.4",
+    "eslint-config-airbnb-typescript": "16.1.0",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-import": "2.25.4",
+    "eslint-plugin-prettier": "4.0.0",
+    "husky": "7.0.4",
+    "jest": "27.4.5",
+    "pino-pretty": "7.3.0",
+    "prettier": "2.5.1",
+    "semantic-release": "18.0.1",
+    "source-map-support": "0.5.21",
+    "ts-jest": "27.1.2",
+    "ts-node": "10.4.0",
+    "typescript": "4.5.4"
   },
   "config": {
     "commitizen": {
@@ -78,11 +85,6 @@
       "config": "commitizen.config.js"
     }
   },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
-  },
   "release": {
     "branches": [
       "master"
@@ -90,12 +92,14 @@
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
       "@semantic-release/npm",
       [
         "@semantic-release/git",
         {
           "assets": [
-            "package.json"
+            "package.json",
+            "CHANGELOG.md"
           ],
           "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
         }

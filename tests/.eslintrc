@@ -1,0 +1,11 @@
+{
+  "parserOptions": {
+    "project": "../tsconfig.json",
+    "createDefaultProgram": true
+  },
+  "rules": {
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "import/no-internal-modules": "off"
+  }
+}

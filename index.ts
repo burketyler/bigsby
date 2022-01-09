@@ -1,62 +1,7 @@
-export * from "./src/annotations/body";
-export * from "./src/annotations/context";
-export * from "./src/annotations/ddb";
-export * from "./src/annotations/handler";
-export * from "./src/annotations/handlerLogger";
-export * from "./src/annotations/header";
-export * from "./src/annotations/path";
-export * from "./src/annotations/query";
-export * from "./src/annotations/scopes";
+/* eslint-disable import/no-internal-modules */
+export * from "./src/logger";
+export * from "./src/annotations/mapping";
+export * from "./src/annotations/rest-api";
 
-export * from "./src/domain/errors/entitlementsError";
-export * from "./src/domain/errors/validationError";
-export * from "./src/domain/errors/bigsbyError";
-export * from "./src/domain/errors/condition-check-failed-error";
-
-export * from "./src/domain/http/lambdaResponse";
-export * from "./src/domain/http/badRequest";
-export * from "./src/domain/http/forbidden";
-export * from "./src/domain/http/internalServerError";
-export * from "./src/domain/http/okResponse";
-export * from "./src/domain/http/acceptedResponse";
-export * from "./src/domain/http/conflictResponse";
-export * from "./src/domain/http/createdResponse";
-export * from "./src/domain/http/gatewayTimeoutResponse";
-export * from "./src/domain/http/lambdaResponse";
-export * from "./src/domain/http/methodNotAllowedResponse";
-export * from "./src/domain/http/movedPermanentlyResponse";
-export * from "./src/domain/http/noContentResponse";
-export * from "./src/domain/http/notFoundResponse";
-export * from "./src/domain/http/notImplementedResponse";
-export * from "./src/domain/http/notModifiedResponse";
-export * from "./src/domain/http/partialContentResponse";
-export * from "./src/domain/http/requestTimeoutResponse";
-export * from "./src/domain/http/serviceUnavailableResponse";
-export * from "./src/domain/http/tooManyRequestResponse";
-export * from "./src/domain/http/unauthorizedResponse";
-export * from "./src/domain/http/unsupportedMediaResponse";
-
-export * from "./src/domain/models/effectStatement";
-export * from "./src/domain/models/lambdaAuthorizer";
-export * from "./src/domain/models/lambdaExecutionContext";
-export * from "./src/domain/models/lambdaHandler";
-export * from "./src/domain/models/lambdaLogger";
-export * from "./src/domain/models/bigsbyConfig";
-
-export * from "./src/functions/createHandler";
-export * from "./src/functions/createAuthorizer";
-export * from "./src/functions/env";
-
-export * from "./src/classes/authorizers";
-export * from "./src/classes/bigsby";
-export * from "./src/classes/dynamo-client";
-
-export {
-  resolve,
-  Injectable,
-  register,
-  useDebugger,
-  useInjectionContext,
-  Autowire,
-  Env,
-} from "ts-injection";
+export { setConfig, getConfig } from "./src/utils";
+export { BigsbyConfig, BigsbyError } from "./src/types";
