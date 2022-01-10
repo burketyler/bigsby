@@ -16,15 +16,18 @@ export class HandlerRestApi implements RestApiHandler {
     @Query("numQuery") numberQuery: number,
     @Query() boolQuery: boolean,
     @Query() objQuery: { value: string },
+    @Query() arrQuery: number[],
     @Header() host: string,
     @Header("Pragma") pragma: string,
     @Header("num-header") numHeader: number,
     @Header("bool-header") boolHeader: boolean,
     @Header("obj-header") objHeader: { value: string },
+    @Header("arr-header") arrHeader: number[],
     @Path("strPath") stringPath: string,
     @Path() numPath: number,
     @Path() boolPath: boolean,
-    @Path() objPath: { value: string }
+    @Path() objPath: { value: string },
+    @Path() arrPath: number[]
   ): Promise<HttpResponse> {
     this.spyOnMeUnhandled();
 
@@ -35,15 +38,18 @@ export class HandlerRestApi implements RestApiHandler {
         numberQuery,
         boolQuery,
         objQuery,
+        arrQuery,
         host,
         pragma,
         numHeader,
         boolHeader,
         objHeader,
+        arrHeader,
         stringPath,
         numPath,
         boolPath,
         objPath,
+        arrPath,
       },
     });
   }

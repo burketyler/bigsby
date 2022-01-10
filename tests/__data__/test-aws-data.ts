@@ -16,6 +16,7 @@ function eventV1(): APIGatewayProxyEvent {
       "Num-Header": "123",
       "bOol-Header": "true",
       "OBJ-HEADER": JSON.stringify({ value: "objParam" }),
+      "arr-header": JSON.stringify([1, 2]),
     },
     multiValueHeaders: {},
     queryStringParameters: {
@@ -23,6 +24,7 @@ function eventV1(): APIGatewayProxyEvent {
       numQuery: "456",
       boolQuery: "false",
       objQuery: JSON.stringify({ value: "objQuery" }),
+      arrQuery: JSON.stringify([3, 4]),
     },
     multiValueQueryStringParameters: null,
     pathParameters: {
@@ -30,6 +32,7 @@ function eventV1(): APIGatewayProxyEvent {
       numPath: "789",
       boolPath: "true",
       objPath: JSON.stringify({ value: "objPath" }),
+      arrPath: JSON.stringify([5, 6]),
     },
     stageVariables: null,
     body: JSON.stringify({

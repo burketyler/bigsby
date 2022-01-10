@@ -1,11 +1,8 @@
-import {
-  APIGatewayEventRequestContext,
-  APIGatewayProxyEvent,
-} from "aws-lambda";
+import { APIGatewayProxyEvent, Context } from "aws-lambda";
 import { APIGatewayProxyResult } from "aws-lambda/trigger/api-gateway-proxy"; // eslint-disable-line import/no-unresolved
-import { AnySchema, ValidationError } from "joi";
+import { AnySchema, Schema, ValidationError } from "joi";
 
-import { BigsbyConfig, RequestInvalidError } from "../../types";
+import { BigsbyConfig, RequestParseError } from "../../types";
 
 export interface HttpResponse extends Omit<APIGatewayProxyResult, "body"> {
   body?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -21,7 +18,7 @@ export type RestApiInvokeFunction = (
 
 export type RawRestApiInvokeFunction = (
   event: APIGatewayProxyEvent,
-  context: APIGatewayEventRequestContext,
+  context: Context,
   config: BigsbyConfig
 ) => Promise<HttpResponse>;
 
@@ -30,44 +27,50 @@ export interface RestApiHandler {
 }
 
 export interface RestApiContext {
-  context: APIGatewayEventRequestContext;
-  event: APIGatewayProxyEvent;
+  event: StandardizedEvent;
+  context: Context;
   config: BigsbyConfig;
 }
 
-interface RequestSchema {
-  headers: AnySchema;
-  body: AnySchema;
-  queryStrings: AnySchema;
-  pathParams: AnySchema;
-}
-
-interface ResponseSchema {
-  [statusCode: number]: string;
-}
+export type StandardizedEvent = Omit<APIGatewayProxyEvent, "body"> & {
+  body: string | Record<string, unknown> | undefined;
+};
 
 export interface RestApiConfig {
   request: {
     enableTypeCoercion: boolean;
-    schema?: RequestSchema;
+    auth?: (context: RestApiContext) => void;
+    schema?: Schema<{
+      headers?: APIGatewayProxyEvent["headers"];
+      body?: APIGatewayProxyEvent["body"];
+      queryStringParameters?: APIGatewayProxyEvent["queryStringParameters"];
+      pathParameters?: APIGatewayProxyEvent["pathParameters"];
+    }>;
   };
   response: {
     enableInferContentType: boolean;
-    schema?: ResponseSchema;
+    schema?: {
+      [statusCode: number]: Schema<{
+        headers?: APIGatewayProxyEvent["headers"];
+        body?: APIGatewayProxyEvent["body"];
+        queryStringParameters?: APIGatewayProxyEvent["queryStringParameters"];
+        pathParameters?: APIGatewayProxyEvent["pathParameters"];
+      }>;
+    };
     headers?: { [headerName: string]: string };
   };
-  lifecycle?: {
+  lifecycle: {
     onInit?: () => void;
-    onInvoke?: (context: RestApiContext) => void;
+    preInvoke?: (event: APIGatewayProxyEvent, context: Context) => void;
     preAuth?: (context: RestApiContext) => void;
-    onAuthError?: <ErrorType>(error: ErrorType) => HttpResponse | void;
+    onAuthFail?: <ErrorType>(error: ErrorType) => void;
     preParse?: (context: RestApiContext) => void;
     preValidate?: (context: RestApiContext) => void;
     onRequestInvalid?: (
-      error: ValidationError | RequestInvalidError
+      error: ValidationError | RequestParseError
     ) => HttpResponse | void;
     preExecute?: (context: RestApiContext) => void;
-    postExecute?: (
+    preResponse?: (
       response: HttpResponse,
       context: RestApiContext
     ) => HttpResponse | void;
@@ -92,4 +95,4 @@ export type ParsedEventValue =
   | undefined
   | null;
 
-export type RawEventValue = string | null;
+export type RawEventValue = string | Record<string, unknown> | undefined | null;

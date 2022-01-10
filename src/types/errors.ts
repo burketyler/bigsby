@@ -1,5 +1,7 @@
 /* eslint-disable max-classes-per-file */
 
+import { ValidationError } from "joi";
+
 export class BigsbyError extends Error {
   constructor(message?: string) {
     super(message);
@@ -9,11 +11,38 @@ export class BigsbyError extends Error {
   }
 }
 
-export class RequestInvalidError extends Error {
+export class RequestParseError extends Error {
   constructor(message?: string) {
+    super(message);
+    this.name = "RequestParseError";
+    Object.setPrototypeOf(this, RequestParseError.prototype);
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class RequestInvalidError extends Error {
+  constructor(public readonly validateErr: ValidationError, message?: string) {
     super(message);
     this.name = "RequestInvalidError";
     Object.setPrototypeOf(this, RequestInvalidError.prototype);
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class ResponseInvalidError extends Error {
+  constructor(public readonly validateErr: ValidationError, message?: string) {
+    super(message);
+    this.name = "ResponseInvalidError";
+    Object.setPrototypeOf(this, ResponseInvalidError.prototype);
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class AuthenticationError extends Error {
+  constructor(public readonly userError: unknown, message?: string) {
+    super(message);
+    this.name = "AuthenticationError";
+    Object.setPrototypeOf(this, AuthenticationError.prototype);
     Error.captureStackTrace(this, this.constructor);
   }
 }

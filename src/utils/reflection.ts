@@ -65,3 +65,7 @@ export function getFunctionParameterNames(fn: unknown): string[] {
     []
   );
 }
+
+export function isObject(value: unknown): boolean {
+  return typeof value === "object" && value !== null;
+}

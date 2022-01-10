@@ -14,5 +14,6 @@ export const defaultConfig: BigsbyConfig = {
     response: {
       enableInferContentType: true,
     },
+    lifecycle: {},
   },
 };

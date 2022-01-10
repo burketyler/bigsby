@@ -1,7 +1,4 @@
-import {
-  APIGatewayEventRequestContext,
-  APIGatewayProxyEvent,
-} from "aws-lambda";
+import { APIGatewayProxyEvent, Context } from "aws-lambda";
 import {
   makeClassInjectable,
   success,
@@ -12,19 +9,32 @@ import {
 
 import { INVOKE_METHOD_NAME } from "../../constants";
 import { useLogger } from "../../logger";
-import { badRequest, internalError } from "../../response";
-import { BigsbyConfig, RequestInvalidError } from "../../types";
+import { badRequest, internalError, unauthorized } from "../../response";
+import {
+  AuthenticationError,
+  BigsbyConfig,
+  RequestInvalidError,
+  RequestParseError,
+  ResponseInvalidError,
+} from "../../types";
 import { onInit } from "../../utils";
 
 import { ERRORED_HANDLER_INSTANCE } from "./constants";
 import {
   HttpResponse,
   RawRestApiInvokeFunction,
+  RestApiConfig,
   RestApiContext,
   RestApiHandler,
   RestApiHandlerConstructor,
+  RestApiInvokeFunction,
 } from "./types";
-import { mapInvokeMethodParams, transformResponse } from "./utils";
+import {
+  callHook,
+  parseRequestParams,
+  enrichResponse,
+  standardizeEvent,
+} from "./utils";
 
 const logger = useLogger();
 
@@ -57,6 +67,7 @@ function instantiateHandler(
     makeInjectableResult.value(),
     "Error instantiating handler class."
   );
+
   return fail(makeInjectableResult.value());
 }
 
@@ -64,7 +75,7 @@ function wrapInvokeMethod(
   handlerInstance: RestApiHandler
 ): (
   event: APIGatewayProxyEvent,
-  apiGwEventContext: APIGatewayEventRequestContext,
+  apiGwEventContext: Context,
   config: BigsbyConfig
 ) => Promise<HttpResponse> {
   logger.info("Wrapping handler invoke method with Bigsby logic.");
@@ -72,53 +83,190 @@ function wrapInvokeMethod(
 
   return async (
     event: APIGatewayProxyEvent,
-    apiGwEventContext: APIGatewayEventRequestContext,
-    config: BigsbyConfig
+    apiGwEventContext: Context,
+    bigsbyConfig: BigsbyConfig
   ): Promise<HttpResponse> => {
-    const context: RestApiContext = {
-      event,
-      config,
-      context: apiGwEventContext,
-    };
-
     try {
-      logger.debug("Calling onInvoke hook if defined.");
-      context.config.restApi.lifecycle?.onInvoke?.(context);
+      const httpResponse = (
+        await runRestApiLifecycle(
+          handlerInstance,
+          invoke,
+          event,
+          apiGwEventContext,
+          bigsbyConfig
+        )
+      )
+        .onSuccess((res) => res)
+        .onError((error) => convertErrorToResponse(error, bigsbyConfig))
+        .output();
 
-      logger.debug("Calling preAuth hook if defined.");
-      context.config.restApi.lifecycle?.preAuth?.(context);
-
-      logger.debug("Calling preValidate hook if defined.");
-      context.config.restApi.lifecycle?.preValidate?.(context);
-
-      logger.debug("Calling preParse hook if defined.");
-      context.config.restApi.lifecycle?.preParse?.(context);
-
-      const parameters = mapInvokeMethodParams(handlerInstance, context);
-
-      logger.debug("Calling preExecute hook if defined.");
-      context.config.restApi.lifecycle?.preExecute?.(context);
-
-      logger.info("Calling handler invoke method.");
-      const response = await invoke.call(handlerInstance, ...parameters);
-
-      logger.debug("Calling postExecute hook if defined.");
-      context.config.restApi.lifecycle?.postExecute?.(response, context);
-
-      return transformResponse(response, context);
+      return enrichResponse(httpResponse, bigsbyConfig);
     } catch (error) {
-      logger.error(error, "Invoke method failed with error.");
-
-      if (error instanceof RequestInvalidError) {
-        logger.debug("Calling onRequestInvalid hook if defined.");
-        context.config.restApi.lifecycle?.onRequestInvalid?.(error);
-        return badRequest();
-      }
-
-      logger.debug("Calling onError hook if defined.");
-      context.config.restApi.lifecycle?.onError?.(error);
+      logger.error(error, "An unhandled error occurred during invocation.");
 
       return internalError();
     }
   };
+}
+
+async function runRestApiLifecycle(
+  handlerInstance: RestApiHandler,
+  invoke: RestApiInvokeFunction,
+  event: APIGatewayProxyEvent,
+  apiGwEventContext: Context,
+  bigsbyConfig: BigsbyConfig
+): Promise<
+  Throwable<
+    | AuthenticationError
+    | ResponseInvalidError
+    | RequestInvalidError
+    | RequestParseError,
+    HttpResponse
+  >
+> {
+  const { lifecycle } = bigsbyConfig.restApi;
+  const { restApi: config } = bigsbyConfig;
+
+  // Invoke
+  callHook("preInvoke", lifecycle?.preInvoke, event, apiGwEventContext);
+
+  const context: RestApiContext = {
+    config: bigsbyConfig,
+    event: standardizeEvent(event),
+    context: apiGwEventContext,
+  };
+
+  // Authenticate
+  callHook("preAuth", lifecycle?.preAuth, context);
+  const authResult = authenticate(context);
+  if (authResult.isError()) {
+    return fail(authResult.value());
+  }
+
+  // Validate (Request)
+  callHook("preValidate", lifecycle?.preValidate, context);
+  const validateReqResult = validateRequest(event, config);
+  if (validateReqResult.isError()) {
+    return fail(validateReqResult.value());
+  }
+
+  // Parse
+  callHook("preParse", lifecycle?.preParse, context);
+  const parseResult = parseRequestParams(handlerInstance, context);
+  if (parseResult.isError()) {
+    return fail(parseResult.value());
+  }
+
+  // Call Handler
+  callHook("preExecute", lifecycle?.preExecute, context);
+  logger.info("Calling handler invoke method.");
+  const response = await invoke.call(handlerInstance, ...parseResult.value());
+
+  // Validate (Response)
+  const validateResResult = validateResponse(response, config);
+  if (validateResResult.isError()) {
+    return fail(validateResResult.value());
+  }
+
+  // Respond
+  callHook("preResponse", lifecycle?.preResponse, response, context);
+  return success(
+    enrichResponse(
+      lifecycle?.preResponse?.(response, context) ?? response,
+      bigsbyConfig
+    )
+  );
+}
+
+function convertErrorToResponse(
+  error: Error,
+  { restApi: { lifecycle } }: BigsbyConfig
+): HttpResponse {
+  if (error instanceof AuthenticationError) {
+    const { userError } = error;
+    callHook("onAuthFail", lifecycle?.onAuthFail, userError);
+    return unauthorized();
+  }
+
+  if (error instanceof RequestParseError) {
+    callHook("onRequestInvalid", lifecycle?.onRequestInvalid, error);
+    return badRequest();
+  }
+
+  if (error instanceof RequestInvalidError) {
+    const { validateErr } = error;
+    callHook("onRequestInvalid", lifecycle?.onRequestInvalid, validateErr);
+    return badRequest();
+  }
+
+  if (error instanceof ResponseInvalidError) {
+    const { validateErr } = error;
+    callHook("onResponseInvalid", lifecycle?.onResponseInvalid, validateErr);
+    return internalError();
+  }
+
+  callHook("onError", lifecycle?.onError, error);
+  return internalError();
+}
+
+function authenticate(
+  context: RestApiContext
+): Throwable<AuthenticationError, void> {
+  if (context.config.restApi.request.auth) {
+    logger.info("Auth method provided, authenticating request.");
+
+    try {
+      context.config.restApi.request.auth?.(context);
+    } catch (error) {
+      logger.info(error, "Authentication failed.");
+
+      fail(new AuthenticationError(error));
+    }
+  }
+
+  return success(undefined);
+}
+
+function validateRequest(
+  event: APIGatewayProxyEvent,
+  config: RestApiConfig
+): Throwable<RequestInvalidError, void> {
+  if (config.request.schema) {
+    logger.info("Request schema provided, validating request.");
+
+    const { error } = config.request.schema.validate({
+      headers: event.headers,
+      body: event.body,
+      pathParameters: event.pathParameters,
+      queryStringParameters: event.queryStringParameters,
+    });
+
+    if (error) {
+      logger.info(error, "Request is invalid.");
+
+      return fail(new RequestInvalidError(error));
+    }
+  }
+
+  return success(undefined);
+}
+
+function validateResponse(
+  response: HttpResponse,
+  config: RestApiConfig
+): Throwable<ResponseInvalidError, void> {
+  if (config.response.schema) {
+    const responseSchema = config.response.schema[response.statusCode];
+    logger.info("Response schema provided, validating response.");
+
+    const { error } = responseSchema.validate(response);
+
+    if (error) {
+      logger.info(error, "Response is invalid.");
+
+      return fail(new ResponseInvalidError(error));
+    }
+  }
+
+  return success(undefined);
 }

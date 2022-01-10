@@ -7,6 +7,8 @@ import { getConfig } from "../utils";
 import { bindings } from "./utils";
 
 export class Logger {
+  public trace: LogFn;
+
   public debug: LogFn;
 
   public info: LogFn;
@@ -30,6 +32,7 @@ export class Logger {
       ...getConfig().logger,
     });
 
+    this.trace = this.pino.trace.bind(this.pino);
     this.debug = this.pino.debug.bind(this.pino);
     this.info = this.pino.info.bind(this.pino);
     this.warn = this.pino.warn.bind(this.pino);

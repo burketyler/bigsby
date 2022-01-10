@@ -1,6 +1,6 @@
 import { APIGatewayProxyEvent, Context, Handler } from "aws-lambda";
 import merge from "lodash.merge";
-import { resolve, success, Throwable } from "ts-injection";
+import { resolve, success, fail, Throwable } from "ts-injection";
 
 import { INVOKE_METHOD_NAME, META_REQUEST_MAPPING } from "../../constants";
 import { useLogger } from "../../logger";
@@ -11,10 +11,15 @@ import {
   InferredType,
   ParameterInstruction,
   ParameterInstructionTarget,
-  RequestInvalidError,
+  RequestParseError,
   TypeCoercionError,
 } from "../../types";
-import { getConfig, tryParseNumber, tryParseObject } from "../../utils";
+import {
+  getConfig,
+  isObject,
+  tryParseNumber,
+  tryParseObject,
+} from "../../utils";
 
 import {
   ContentType,
@@ -24,13 +29,14 @@ import {
   RestApiContext,
   RestApiHandler,
   RestApiHandlerConstructor,
+  StandardizedEvent,
 } from "./types";
 
 const logger = useLogger();
 
 export function createRestApiHandler(
   handlerClass: RestApiHandlerConstructor,
-  config?: DeepPartial<BigsbyConfig>
+  handlerConfig?: DeepPartial<BigsbyConfig>
 ): Handler<APIGatewayProxyEvent, HttpResponse> {
   return async (
     event: APIGatewayProxyEvent,
@@ -39,22 +45,22 @@ export function createRestApiHandler(
     const defaultConfig = getConfig();
 
     logger.debug(
-      { defaultConfig: getConfig(), handlerConfig: config },
-      "Merging handlerConfig on top of defaultConfig."
+      { defaultConfig, handlerConfig },
+      "Merging defaultConfig <- handlerConfig."
     );
-    const mergedConfig = merge(defaultConfig, config);
+    const config = merge(defaultConfig, handlerConfig);
 
-    if (defaultConfig.logger.printRequest) {
+    if (config.logger.printRequest) {
       logger.info({ event, context }, "Received request.");
     }
 
     const response = await resolve(handlerClass)[INVOKE_METHOD_NAME](
       event,
       context,
-      mergedConfig
+      config
     );
 
-    if (defaultConfig.logger.printResponse) {
+    if (config.logger.printResponse) {
       logger.info({ response }, "Returning response.");
     }
 
@@ -62,128 +68,59 @@ export function createRestApiHandler(
   };
 }
 
-export function mapInvokeMethodParams(
-  handler: RestApiHandler,
-  context: RestApiContext
-): unknown[] {
-  const instructions: ParameterInstruction[] =
-    Reflect.getOwnMetadata(
-      META_REQUEST_MAPPING,
-      handler.constructor,
-      INVOKE_METHOD_NAME
-    ) ?? [];
-  logger.info("Mapping Lambda inputs to handler instructions.");
+export function callHook<
+  HookType extends (...argArr: never[]) => ReturnType<HookType>
+>(
+  name: string,
+  hook: HookType | undefined,
+  ...args: any[] // eslint-disable-line @typescript-eslint/no-explicit-any
+): ReturnType<HookType> {
+  logger.debug(`Calling lifecycle hook ${name}.`);
 
-  context.event.headers = Object.entries(context.event.headers).reduce(
-    (headers, [headerName, headerValue]) => {
-      delete headers[headerName]; // eslint-disable-line no-param-reassign
-      return { ...headers, [headerName.toLowerCase()]: headerValue };
-    },
-    { ...context.event.headers }
-  );
-
-  return instructions
-    .sort(({ paramIndex: aIndex }, { paramIndex: bIndex }) => aIndex - bIndex)
-    .reduce((args: unknown[], instruction, index) => {
-      logger.debug({ instruction }, `Executing instruction ${index + 1}.`);
-
-      args.push(evaluateInstruction(instruction, context));
-
-      return args;
-    }, []);
+  return hook?.call(args) as ReturnType<HookType>;
 }
 
-function evaluateInstruction(
-  { type, searchKey, mapsTo, paramIndex }: ParameterInstruction,
-  context: RestApiContext
-): ParsedEventValue {
-  const {
-    event: { pathParameters, queryStringParameters, headers, body },
-    config: { restApi: config },
-  } = context;
-
-  let valueContainer: Record<string, unknown> | string | null;
-  let eventValue: RawEventValue;
-
-  switch (mapsTo) {
-    case ParameterInstructionTarget.CONTEXT:
-      return context;
-    case ParameterInstructionTarget.BODY:
-      valueContainer = body;
-      break;
-    case ParameterInstructionTarget.PATH:
-      valueContainer = pathParameters;
-      break;
-    case ParameterInstructionTarget.QUERY:
-      valueContainer = queryStringParameters;
-      break;
-    case ParameterInstructionTarget.HEADER:
-      valueContainer = headers;
-      break;
-    default:
-      throw new BigsbyError(`Unimplemented param target: ${mapsTo}`);
-  }
-
-  if (mapsTo === ParameterInstructionTarget.BODY) {
-    eventValue = valueContainer as string;
-  } else if (mapsTo === ParameterInstructionTarget.HEADER) {
-    eventValue = (valueContainer as Record<string, RawEventValue>)?.[
-      searchKey.toLowerCase() as keyof Record<string, RawEventValue>
-    ];
-  } else {
-    eventValue = (valueContainer as Record<string, RawEventValue>)?.[
-      searchKey as keyof Record<string, RawEventValue>
-    ];
-  }
-
-  if (!eventValue) {
-    logger.warn(
-      `Field '${searchKey}' doesn't exist in event.${mapsTo}, parameter at index ${paramIndex} will be undefined.`
-    );
-    return undefined;
-  }
-
-  if (!config.request.enableTypeCoercion) {
-    logger.debug("Type Coercion disabled, returning pristine event value.");
-    return eventValue;
-  }
-
-  const parseResult = parseValueAsType(eventValue, type);
-
-  if (parseResult.isSuccess()) {
-    return parseResult.value();
-  }
-
-  logger.error(parseResult.value());
-
-  throw new RequestInvalidError(
-    `Failed to map event.${mapsTo} to parameter index ${paramIndex}.`
-  );
-}
-
-function parseValueAsType(
-  value: string | null,
-  type: InferredType | undefined
-): Throwable<TypeCoercionError, ParsedEventValue> {
-  logger.debug({ type }, "Type Coercion enabled, returning value as type:");
-
-  switch (type) {
-    case InferredType.NUMBER:
-      return tryParseNumber(value);
-    case InferredType.BOOLEAN:
-      return success(value === "true");
-    case InferredType.OBJECT:
-      return tryParseObject(value);
-    case InferredType.STRING:
-    case InferredType.ARRAY:
-    default:
-      return success(value);
-  }
-}
-
-export function addInferredContentTypeBody(
-  response: HttpResponse
+export function enrichResponse(
+  response: HttpResponse,
+  { restApi: config }: BigsbyConfig
 ): HttpResponse {
+  let enrichedResponse: HttpResponse = response;
+
+  logger.info("Transforming handler response.");
+
+  if (config.response.headers) {
+    enrichedResponse = addResponseHeaders(response, config.response.headers);
+  }
+
+  if (config.response.enableInferContentType) {
+    enrichedResponse = addInferredContentTypeBody(response);
+  }
+
+  return enrichedResponse;
+}
+
+function addResponseHeaders(
+  response: HttpResponse,
+  headersToAdd: { [headerName: string]: string }
+): HttpResponse {
+  logger.debug({ headers: headersToAdd }, "Adding default headers.");
+
+  return {
+    ...response,
+    headers: Object.entries(headersToAdd).reduce(
+      (
+        newHeaders: NonNullable<HttpResponse["headers"]>,
+        [headerName, headerValue]
+      ) => ({
+        ...newHeaders,
+        [headerName]: newHeaders[headerName] ?? headerValue,
+      }),
+      response.headers ?? {}
+    ),
+  };
+}
+
+function addInferredContentTypeBody(response: HttpResponse): HttpResponse {
   logger.info("Inferring content type.");
 
   if (response.headers?.["content-type"]) {
@@ -237,42 +174,182 @@ function addContentTypeToHeaders(
   }
 }
 
-export function transformResponse(
-  response: HttpResponse,
-  { config: { restApi: config } }: RestApiContext
-): HttpResponse {
-  let enrichedResponse: HttpResponse = response;
+export function parseRequestParams(
+  handler: RestApiHandler,
+  context: RestApiContext
+): Throwable<RequestParseError, ParsedEventValue[]> {
+  logger.info("Mapping Lambda inputs to handler instructions.");
 
-  logger.info("Transforming handler response.");
+  const instructions: ParameterInstruction[] =
+    Reflect.getOwnMetadata(
+      META_REQUEST_MAPPING,
+      handler.constructor,
+      INVOKE_METHOD_NAME
+    ) ?? [];
+  const parameters: ParsedEventValue[] = [];
 
-  if (config.response.headers) {
-    enrichedResponse = addResponseHeaders(response, config.response.headers);
+  // eslint-disable-next-line no-restricted-syntax
+  for (const instruction of sortInstructions(instructions)) {
+    logger.debug({ instruction }, `Evaluating instruction.`);
+
+    const evaluateResult = evaluateInstruction(instruction, context);
+
+    if (evaluateResult.isError()) {
+      return fail(evaluateResult.value());
+    }
+
+    parameters.push(evaluateResult.value());
   }
 
-  if (config.response.enableInferContentType) {
-    enrichedResponse = addInferredContentTypeBody(response);
-  }
-
-  return enrichedResponse;
+  return success(parameters);
 }
 
-function addResponseHeaders(
-  response: HttpResponse,
-  headersToAdd: { [headerName: string]: string }
-): HttpResponse {
-  logger.debug({ headers: headersToAdd }, "Adding default headers.");
+function sortInstructions(
+  instructions: ParameterInstruction[]
+): ParameterInstruction[] {
+  return instructions.sort((a, b) => a.paramIndex - b.paramIndex);
+}
 
-  return {
-    ...response,
-    headers: Object.entries(headersToAdd).reduce(
-      (
-        newHeaders: NonNullable<HttpResponse["headers"]>,
-        [headerName, headerValue]
-      ) => ({
-        ...newHeaders,
-        [headerName]: newHeaders[headerName] ?? headerValue,
-      }),
-      response.headers ?? {}
-    ),
-  };
+function evaluateInstruction(
+  { type, searchKey, mapsTo, paramIndex }: ParameterInstruction,
+  context: RestApiContext
+): Throwable<RequestParseError, ParsedEventValue> {
+  const {
+    config: { restApi: config },
+  } = context;
+
+  if (mapsTo === ParameterInstructionTarget.CONTEXT) {
+    return success(context);
+  }
+
+  const eventValue = extractEventValue(
+    getEventValueContainer(context, mapsTo),
+    mapsTo,
+    searchKey
+  );
+
+  if (!eventValue) {
+    logger.warn(
+      `Field '${searchKey}' doesn't exist in event.${mapsTo}, parameter at index ${paramIndex} will be undefined.`
+    );
+    return success(undefined);
+  }
+
+  if (!config.request.enableTypeCoercion) {
+    logger.debug("Type Coercion disabled, returning pristine event value.");
+    return success(eventValue);
+  }
+
+  const parseResult = parseValueAsType(eventValue, type);
+
+  if (parseResult.isError()) {
+    logger.error(parseResult.value());
+
+    return fail(
+      new RequestParseError(
+        `Failed to map event.${mapsTo} to parameter index ${paramIndex}.`
+      )
+    );
+  }
+
+  return success(parseResult.value());
+}
+
+function getEventValueContainer(
+  context: RestApiContext,
+  mapsTo: ParameterInstructionTarget
+): Record<string, unknown> | RawEventValue {
+  const {
+    event: { pathParameters, queryStringParameters, headers, body },
+  } = context;
+
+  switch (mapsTo) {
+    case ParameterInstructionTarget.CONTEXT:
+      throw new BigsbyError(
+        "Context targets should be returned before getting here, this is indicative of a code defect."
+      );
+    case ParameterInstructionTarget.BODY:
+      return body;
+    case ParameterInstructionTarget.PATH:
+      return pathParameters;
+    case ParameterInstructionTarget.QUERY:
+      return queryStringParameters;
+    case ParameterInstructionTarget.HEADER:
+      return headers;
+    default:
+      throw new BigsbyError(`Unimplemented param target: ${mapsTo}`);
+  }
+}
+
+function extractEventValue(
+  container: Record<string, unknown> | RawEventValue,
+  mapsTo: ParameterInstructionTarget,
+  searchKey: string
+): RawEventValue {
+  let value: RawEventValue;
+
+  if (mapsTo === ParameterInstructionTarget.BODY) {
+    value = container;
+  } else if (mapsTo === ParameterInstructionTarget.HEADER) {
+    value = (container as Record<string, RawEventValue>)?.[
+      searchKey.toLowerCase() as keyof Record<string, RawEventValue>
+    ];
+  } else {
+    value = (container as Record<string, RawEventValue>)?.[
+      searchKey as keyof Record<string, RawEventValue>
+    ];
+  }
+
+  return value;
+}
+
+function parseValueAsType(
+  value: RawEventValue,
+  type: InferredType | undefined
+): Throwable<TypeCoercionError, ParsedEventValue> {
+  logger.debug({ type }, "Type Coercion enabled, returning value as type:");
+
+  switch (type) {
+    case InferredType.NUMBER:
+      return tryParseNumber(value);
+    case InferredType.BOOLEAN:
+      return success(value === "true");
+    case InferredType.ARRAY:
+    case InferredType.OBJECT:
+      return isObject(value) || Array.isArray(value)
+        ? success(value)
+        : tryParseObject(value);
+    case InferredType.STRING:
+    default:
+      return success(value);
+  }
+}
+
+export function standardizeEvent(
+  event: APIGatewayProxyEvent
+): StandardizedEvent {
+  const standardEvent: StandardizedEvent = {
+    ...event,
+  } as StandardizedEvent;
+
+  standardEvent.headers = Object.entries(event.headers).reduce(
+    (headers, [headerName, headerValue]) => {
+      delete headers[headerName]; // eslint-disable-line no-param-reassign
+      return { ...headers, [headerName.toLowerCase()]: headerValue };
+    },
+    { ...standardEvent.headers }
+  );
+
+  if (event.headers["content-type"] === ContentType.APPLICATION_JSON) {
+    standardEvent.body = tryParseObject(event.body)
+      .onSuccess((value) => value)
+      .onError(() => {
+        throw new RequestParseError(
+          "Content-Type is application/json but failed to parse event body."
+        );
+      })
+      .output();
+  }
+
+  return standardEvent;
 }

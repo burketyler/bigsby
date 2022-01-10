@@ -62,6 +62,7 @@ describe("Mapping annotation tests", () => {
           strQuery: mockEvent.queryStringParameters!.strQuery,
           boolQuery: mockEvent.queryStringParameters!.boolQuery! === "true",
           objQuery: JSON.parse(mockEvent.queryStringParameters!.objQuery!),
+          arrQuery: JSON.parse(mockEvent.queryStringParameters!.arrQuery!),
         })
       );
     });
@@ -96,9 +97,10 @@ describe("Mapping annotation tests", () => {
 
       expect(JSON.parse(response.body)).toEqual(
         expect.objectContaining({
-          numHeader: +mockEvent.headers!["num-header"]!,
-          boolHeader: mockEvent.headers!["bool-header"] === "true",
-          objHeader: JSON.parse(mockEvent.headers!["obj-header"]!),
+          numHeader: +mockEvent.headers!["Num-Header"]!,
+          boolHeader: mockEvent.headers!["bOol-Header"] === "true",
+          objHeader: JSON.parse(mockEvent.headers!["OBJ-HEADER"]!),
+          arrHeader: JSON.parse(mockEvent.headers!["arr-header"]!),
         })
       );
     });
@@ -108,7 +110,7 @@ describe("Mapping annotation tests", () => {
 
       expect(JSON.parse(response.body)).toEqual(
         expect.objectContaining({
-          host: mockEvent.headers.host,
+          host: mockEvent.headers.Host,
         })
       );
     });
@@ -146,6 +148,7 @@ describe("Mapping annotation tests", () => {
           numPath: +mockEvent.pathParameters!.numPath!,
           boolPath: mockEvent.pathParameters!.boolPath === "true",
           objPath: JSON.parse(mockEvent.pathParameters!.objPath!),
+          arrPath: JSON.parse(mockEvent.pathParameters!.arrPath!),
         })
       );
     });
