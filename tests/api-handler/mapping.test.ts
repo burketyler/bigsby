@@ -4,22 +4,22 @@ import {
   Handler as HandlerFunction,
 } from "aws-lambda";
 
-import { createRestApiHandler } from "../../../src/annotations/rest-api";
-import { testAwsData } from "../../__data__/test-aws-data";
-import { HandlerRestApi } from "../../__utils__/handlers";
+import { createRestApiHandler } from "../../src/annotations/api-handler";
+import { testAwsData } from "../__data__/test-aws-data";
+import { SuccessHandler } from "../__utils__/handlers";
 
 const {
   apiGw: { eventV1, contextV1 },
 } = testAwsData;
 
-describe("Mapping annotation tests", () => {
+describe("Mapping tests", () => {
   describe("@Body mapping tests", () => {
     let handler: HandlerFunction;
     let mockEvent: APIGatewayProxyEvent;
     let mockContext: Context;
 
     beforeAll(() => {
-      handler = createRestApiHandler(HandlerRestApi);
+      handler = createRestApiHandler(SuccessHandler);
     });
 
     beforeEach(() => {
@@ -46,7 +46,7 @@ describe("Mapping annotation tests", () => {
     let mockContext: Context;
 
     beforeAll(() => {
-      handler = createRestApiHandler(HandlerRestApi);
+      handler = createRestApiHandler(SuccessHandler);
     });
 
     beforeEach(() => {
@@ -84,7 +84,7 @@ describe("Mapping annotation tests", () => {
     let mockContext: Context;
 
     beforeAll(() => {
-      handler = createRestApiHandler(HandlerRestApi);
+      handler = createRestApiHandler(SuccessHandler);
     });
 
     beforeEach(() => {
@@ -132,7 +132,7 @@ describe("Mapping annotation tests", () => {
     let mockContext: Context;
 
     beforeAll(() => {
-      handler = createRestApiHandler(HandlerRestApi);
+      handler = createRestApiHandler(SuccessHandler);
     });
 
     beforeEach(() => {

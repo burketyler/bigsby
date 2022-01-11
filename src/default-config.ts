@@ -7,7 +7,7 @@ export const defaultConfig: BigsbyConfig = {
     printRequest: false,
     printResponse: false,
   },
-  restApi: {
+  apiHandler: {
     request: {
       enableTypeCoercion: true,
     },

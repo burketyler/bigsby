@@ -19,6 +19,6 @@ export function onInit(): void {
     return;
   }
 
-  config.restApi?.lifecycle?.onInit?.();
+  config.apiHandler?.lifecycle?.onInit?.();
   hasInitialized = true;
 }

@@ -4,8 +4,4 @@ export {
   isObject,
 } from "./reflection";
 export { getConfig, setConfig, onInit } from "./instance";
-export {
-  tryParseObject,
-  tryParseNumber,
-  tryStringifyResponseBody,
-} from "./parsing";
+export { tryParseObject, tryParseNumber, tryStringify } from "./parsing";

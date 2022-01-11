@@ -1,7 +1,7 @@
-import { RestApiConfig } from "../../annotations/rest-api";
+import { ApiHandlerConfig } from "../../annotations/api-handler";
 import { LoggerConfig } from "../../logger";
 
 export interface BigsbyConfig {
-  restApi: RestApiConfig;
+  apiHandler: ApiHandlerConfig;
   logger: LoggerConfig;
 }

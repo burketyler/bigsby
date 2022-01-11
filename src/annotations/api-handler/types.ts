@@ -1,32 +1,36 @@
 import { APIGatewayProxyEvent, Context } from "aws-lambda";
 import { APIGatewayProxyResult } from "aws-lambda/trigger/api-gateway-proxy"; // eslint-disable-line import/no-unresolved
-import { AnySchema, Schema, ValidationError } from "joi";
+import { Schema, ValidationError } from "joi";
 
-import { BigsbyConfig, RequestParseError } from "../../types";
+import {
+  BigsbyConfig,
+  RequestParseError,
+  TypeCoercionError,
+} from "../../types";
 
 export interface HttpResponse extends Omit<APIGatewayProxyResult, "body"> {
   body?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
-export interface RestApiHandlerConstructor {
-  new (): RestApiHandler;
+export interface ApiHandlerConstructor {
+  new (): ApiHandler;
 }
 
-export type RestApiInvokeFunction = (
+export type ApiHandlerInvokeFunction = (
   ...args: any[] // eslint-disable-line @typescript-eslint/no-explicit-any
 ) => Promise<HttpResponse>;
 
-export type RawRestApiInvokeFunction = (
+export type RawApiHandlerInvokeFunction = (
   event: APIGatewayProxyEvent,
   context: Context,
   config: BigsbyConfig
 ) => Promise<HttpResponse>;
 
-export interface RestApiHandler {
-  invoke: RestApiInvokeFunction;
+export interface ApiHandler {
+  invoke: ApiHandlerInvokeFunction;
 }
 
-export interface RestApiContext {
+export interface ApiHandlerContext {
   event: StandardizedEvent;
   context: Context;
   config: BigsbyConfig;
@@ -36,45 +40,48 @@ export type StandardizedEvent = Omit<APIGatewayProxyEvent, "body"> & {
   body: string | Record<string, unknown> | undefined;
 };
 
-export interface RestApiConfig {
+export type RequestValidationSchema = Schema<{
+  headers?: APIGatewayProxyEvent["headers"];
+  body?: APIGatewayProxyEvent["body"];
+  queryStringParameters?: APIGatewayProxyEvent["queryStringParameters"];
+  pathParameters?: APIGatewayProxyEvent["pathParameters"];
+}>;
+
+export interface ResponseValidationSchemaMap {
+  [statusCode: number]: Schema<HttpResponse>;
+}
+
+export type AuthMethod = (context: ApiHandlerContext) => void;
+
+export interface ApiHandlerConfig {
   request: {
     enableTypeCoercion: boolean;
-    auth?: (context: RestApiContext) => void;
-    schema?: Schema<{
-      headers?: APIGatewayProxyEvent["headers"];
-      body?: APIGatewayProxyEvent["body"];
-      queryStringParameters?: APIGatewayProxyEvent["queryStringParameters"];
-      pathParameters?: APIGatewayProxyEvent["pathParameters"];
-    }>;
+    auth?: AuthMethod;
+    schema?: RequestValidationSchema;
   };
   response: {
     enableInferContentType: boolean;
-    schema?: {
-      [statusCode: number]: Schema<{
-        headers?: APIGatewayProxyEvent["headers"];
-        body?: APIGatewayProxyEvent["body"];
-        queryStringParameters?: APIGatewayProxyEvent["queryStringParameters"];
-        pathParameters?: APIGatewayProxyEvent["pathParameters"];
-      }>;
-    };
+    schema?: ResponseValidationSchemaMap;
     headers?: { [headerName: string]: string };
   };
   lifecycle: {
     onInit?: () => void;
     preInvoke?: (event: APIGatewayProxyEvent, context: Context) => void;
-    preAuth?: (context: RestApiContext) => void;
+    preAuth?: (context: ApiHandlerContext) => void;
     onAuthFail?: <ErrorType>(error: ErrorType) => void;
-    preParse?: (context: RestApiContext) => void;
-    preValidate?: (context: RestApiContext) => void;
+    preParse?: (context: ApiHandlerContext) => void;
+    preValidate?: (context: ApiHandlerContext) => void;
     onRequestInvalid?: (
       error: ValidationError | RequestParseError
     ) => HttpResponse | void;
-    preExecute?: (context: RestApiContext) => void;
+    preExecute?: (context: ApiHandlerContext) => void;
     preResponse?: (
       response: HttpResponse,
-      context: RestApiContext
+      context: ApiHandlerContext
     ) => HttpResponse | void;
-    onResponseInvalid?: (error: ValidationError) => HttpResponse | void;
+    onResponseInvalid?: (
+      error: ValidationError | TypeCoercionError
+    ) => HttpResponse | void;
     onError?: (error: unknown) => HttpResponse | void;
   };
 }
@@ -91,7 +98,7 @@ export type ParsedEventValue =
   | boolean
   | never[]
   | Record<string, unknown>
-  | RestApiContext
+  | ApiHandlerContext
   | undefined
   | null;
 

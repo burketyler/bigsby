@@ -20,6 +20,15 @@ export class RequestParseError extends Error {
   }
 }
 
+export class ResponseParseError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "ResponseParseError";
+    Object.setPrototypeOf(this, ResponseParseError.prototype);
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
 export class RequestInvalidError extends Error {
   constructor(public readonly validateErr: ValidationError, message?: string) {
     super(message);

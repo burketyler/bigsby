@@ -5,13 +5,15 @@ import {
 } from "aws-lambda";
 import { constants } from "http2";
 
-import { createRestApiHandler } from "../../../src/annotations/rest-api";
-import { testAwsData } from "../../__data__/test-aws-data";
-import { HandlerRestApi } from "../../__utils__/handlers";
+import { createRestApiHandler } from "../../src/annotations/api-handler";
+import * as Utils from "../../src/annotations/api-handler/utils";
+import { testAwsData } from "../__data__/test-aws-data";
+import { SuccessHandler } from "../__utils__/handlers";
 
 const {
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
   HTTP_STATUS_OK,
+  HTTP_STATUS_UNAUTHORIZED,
   HTTP_STATUS_BAD_REQUEST,
 } = constants;
 
@@ -19,15 +21,25 @@ const {
   apiGw: { eventV1, contextV1 },
 } = testAwsData;
 
-describe("RestApi tests", () => {
+describe("Handler tests", () => {
   let handler: HandlerFunction;
   let mockEvent: APIGatewayProxyEvent;
   let mockContext: Context;
   let unhandledSpy: jest.SpyInstance;
+  let mockAuth: jest.Mock;
+  let spyTransformResponse: jest.SpyInstance;
 
   beforeAll(() => {
-    handler = createRestApiHandler(HandlerRestApi);
-    unhandledSpy = jest.spyOn(HandlerRestApi.prototype, "spyOnMeUnhandled");
+    unhandledSpy = jest.spyOn(SuccessHandler.prototype, "spyOnMeUnhandled");
+    mockAuth = jest.fn();
+    handler = createRestApiHandler(SuccessHandler, {
+      apiHandler: {
+        request: {
+          auth: mockAuth,
+        },
+      },
+    });
+    spyTransformResponse = jest.spyOn(Utils, "transformResponse");
   });
 
   beforeEach(() => {
@@ -35,7 +47,7 @@ describe("RestApi tests", () => {
     mockContext = contextV1();
   });
 
-  it("Should instantiate successfully", () => {
+  it("Should instantiate", () => {
     expect(handler).toBeDefined();
   });
 
@@ -52,7 +64,7 @@ describe("RestApi tests", () => {
   });
 
   describe("When handler invocation is unsuccessful", () => {
-    describe("When event body fails to parse", () => {
+    describe("When request body fails to parse", () => {
       it("Should return the a badRequest response", async () => {
         const response = await handler(
           { ...mockEvent, body: "notJson" },
@@ -63,6 +75,38 @@ describe("RestApi tests", () => {
         expect(response).toEqual(
           expect.objectContaining({
             statusCode: HTTP_STATUS_BAD_REQUEST,
+          })
+        );
+      });
+    });
+
+    describe("When response body fails to parse", () => {
+      it("Should return the a internalError response", async () => {
+        spyTransformResponse.mockImplementationOnce(() => {
+          throw new Error();
+        });
+
+        const response = await handler(mockEvent, mockContext, () => {});
+
+        expect(response).toEqual(
+          expect.objectContaining({
+            statusCode: HTTP_STATUS_INTERNAL_SERVER_ERROR,
+          })
+        );
+      });
+    });
+
+    describe("When request auth fails", () => {
+      it("Should return an unauthorized response", async () => {
+        mockAuth.mockImplementationOnce(() => {
+          throw new Error();
+        });
+
+        const response = await handler(mockEvent, mockContext, () => {});
+
+        expect(response).toEqual(
+          expect.objectContaining({
+            statusCode: HTTP_STATUS_UNAUTHORIZED,
           })
         );
       });

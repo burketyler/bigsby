@@ -2,25 +2,25 @@ import { fail, success, Throwable } from "ts-injection";
 
 import { TypeCoercionError } from "../types";
 
-export function tryStringifyResponseBody(
-  body: unknown
+export function tryStringify(
+  value: unknown
 ): Throwable<TypeCoercionError, string | undefined> {
   try {
-    switch (typeof body) {
+    switch (typeof value) {
       case "string":
       case "undefined":
-        return success(body);
+        return success(value);
       case "bigint":
       case "number":
       case "boolean":
-        return success(body.toString());
+        return success(value.toString());
       case "object":
-        return success(JSON.stringify(body));
+        return success(JSON.stringify(value));
       case "function":
       case "symbol":
       default:
         return fail(
-          new TypeCoercionError(`Invalid body type: typeof ${typeof body}.`)
+          new TypeCoercionError(`Invalid value type: typeof ${typeof value}.`)
         );
     }
   } catch (error) {

@@ -9,6 +9,7 @@ export default {
     "!__data__/**/*",
     "!__utils__/**/*",
     "!tests/**/*",
+    "!constants.ts",
     "src/**/*",
   ],
 } as InitialOptions;

@@ -2,7 +2,13 @@ import { APIGatewayProxyEvent, Context, Handler } from "aws-lambda";
 import merge from "lodash.merge";
 import { resolve, success, fail, Throwable } from "ts-injection";
 
-import { INVOKE_METHOD_NAME, META_REQUEST_MAPPING } from "../../constants";
+import {
+  INVOKE_METHOD_NAME,
+  META_AUTH_METHOD,
+  META_REQUEST_MAPPING,
+  META_REQUEST_SCHEMA,
+  META_RESPONSE_SCHEMA,
+} from "../../constants";
 import { useLogger } from "../../logger";
 import {
   BigsbyConfig,
@@ -12,6 +18,7 @@ import {
   ParameterInstruction,
   ParameterInstructionTarget,
   RequestParseError,
+  ResponseParseError,
   TypeCoercionError,
 } from "../../types";
 import {
@@ -19,6 +26,7 @@ import {
   isObject,
   tryParseNumber,
   tryParseObject,
+  tryStringify,
 } from "../../utils";
 
 import {
@@ -26,35 +34,29 @@ import {
   HttpResponse,
   ParsedEventValue,
   RawEventValue,
-  RestApiContext,
-  RestApiHandler,
-  RestApiHandlerConstructor,
+  ApiHandlerContext,
+  ApiHandler,
+  ApiHandlerConstructor,
   StandardizedEvent,
 } from "./types";
 
 const logger = useLogger();
 
 export function createRestApiHandler(
-  handlerClass: RestApiHandlerConstructor,
+  handlerConstructor: ApiHandlerConstructor,
   handlerConfig?: DeepPartial<BigsbyConfig>
 ): Handler<APIGatewayProxyEvent, HttpResponse> {
   return async (
     event: APIGatewayProxyEvent,
     context: Context
   ): Promise<HttpResponse> => {
-    const defaultConfig = getConfig();
-
-    logger.debug(
-      { defaultConfig, handlerConfig },
-      "Merging defaultConfig <- handlerConfig."
-    );
-    const config = merge(defaultConfig, handlerConfig);
+    const config = generateConfig(handlerConstructor, handlerConfig);
 
     if (config.logger.printRequest) {
       logger.info({ event, context }, "Received request.");
     }
 
-    const response = await resolve(handlerClass)[INVOKE_METHOD_NAME](
+    const response = await resolve(handlerConstructor)[INVOKE_METHOD_NAME](
       event,
       context,
       config
@@ -68,8 +70,36 @@ export function createRestApiHandler(
   };
 }
 
+function generateConfig(
+  handlerConstructor: ApiHandlerConstructor,
+  handlerConfig: DeepPartial<BigsbyConfig> | undefined
+): BigsbyConfig {
+  const defaultConfig = getConfig();
+
+  logger.debug(
+    { defaultConfig, handlerConfig },
+    "Merging defaultConfig <- handlerConfig."
+  );
+
+  const config: BigsbyConfig = merge(defaultConfig, handlerConfig);
+
+  config.apiHandler.request.auth =
+    config.apiHandler.request.auth ??
+    Reflect.getOwnMetadata(META_AUTH_METHOD, handlerConstructor);
+
+  config.apiHandler.request.schema =
+    config.apiHandler.request.schema ??
+    Reflect.getOwnMetadata(META_REQUEST_SCHEMA, handlerConstructor);
+
+  config.apiHandler.response.schema =
+    config.apiHandler.response.schema ??
+    Reflect.getOwnMetadata(META_RESPONSE_SCHEMA, handlerConstructor);
+
+  return config;
+}
+
 export function callHook<
-  HookType extends (...argArr: never[]) => ReturnType<HookType>
+  HookType extends (...argArr: any[]) => ReturnType<HookType> // eslint-disable-line @typescript-eslint/no-explicit-any
 >(
   name: string,
   hook: HookType | undefined,
@@ -77,14 +107,14 @@ export function callHook<
 ): ReturnType<HookType> {
   logger.debug(`Calling lifecycle hook ${name}.`);
 
-  return hook?.call(args) as ReturnType<HookType>;
+  return hook?.(...args) as ReturnType<HookType>;
 }
 
-export function enrichResponse(
+export function transformResponse(
   response: HttpResponse,
-  { restApi: config }: BigsbyConfig
-): HttpResponse {
-  let enrichedResponse: HttpResponse = response;
+  { apiHandler: config }: BigsbyConfig
+): Throwable<TypeCoercionError, HttpResponse> {
+  let enrichedResponse: HttpResponse = { ...response };
 
   logger.info("Transforming handler response.");
 
@@ -96,7 +126,14 @@ export function enrichResponse(
     enrichedResponse = addInferredContentTypeBody(response);
   }
 
-  return enrichedResponse;
+  const stringifyResult = tryStringify(enrichedResponse.body);
+
+  if (stringifyResult.isError()) {
+    logger.error(stringifyResult.value(), "Failed to stringify response.");
+    return fail(new ResponseParseError());
+  }
+
+  return success({ ...enrichedResponse, body: stringifyResult.value() });
 }
 
 function addResponseHeaders(
@@ -175,8 +212,8 @@ function addContentTypeToHeaders(
 }
 
 export function parseRequestParams(
-  handler: RestApiHandler,
-  context: RestApiContext
+  handler: ApiHandler,
+  context: ApiHandlerContext
 ): Throwable<RequestParseError, ParsedEventValue[]> {
   logger.info("Mapping Lambda inputs to handler instructions.");
 
@@ -212,10 +249,10 @@ function sortInstructions(
 
 function evaluateInstruction(
   { type, searchKey, mapsTo, paramIndex }: ParameterInstruction,
-  context: RestApiContext
+  context: ApiHandlerContext
 ): Throwable<RequestParseError, ParsedEventValue> {
   const {
-    config: { restApi: config },
+    config: { apiHandler: config },
   } = context;
 
   if (mapsTo === ParameterInstructionTarget.CONTEXT) {
@@ -256,7 +293,7 @@ function evaluateInstruction(
 }
 
 function getEventValueContainer(
-  context: RestApiContext,
+  context: ApiHandlerContext,
   mapsTo: ParameterInstructionTarget
 ): Record<string, unknown> | RawEventValue {
   const {

@@ -1,13 +1,25 @@
-import { Body, Header, Path, Query } from "../../src/annotations/mapping";
+// eslint-disable-next-line max-classes-per-file
+import { constants } from "http2";
+import Joi from "joi";
+
 import {
   HttpResponse,
   RestApi,
-  RestApiHandler,
-} from "../../src/annotations/rest-api";
-import { okResponse } from "../../src/response";
+  ApiHandler,
+} from "../../src/annotations/api-handler";
+import { Auth } from "../../src/annotations/auth";
+import { Body, Header, Path, Query } from "../../src/annotations/mapping";
+import {
+  RequestSchema,
+  ResponseSchema,
+  ResponseSchemaMap,
+} from "../../src/annotations/validation";
+import { badRequest, okResponse } from "../../src/response";
+
+const { HTTP_STATUS_OK, HTTP_STATUS_BAD_REQUEST } = constants;
 
 @RestApi
-export class HandlerRestApi implements RestApiHandler {
+export class SuccessHandler implements ApiHandler {
   public spyOnMeUnhandled(): void {}
 
   public async invoke(
@@ -52,5 +64,47 @@ export class HandlerRestApi implements RestApiHandler {
         arrPath,
       },
     });
+  }
+}
+
+@RestApi
+@RequestSchema(
+  Joi.object({
+    body: Joi.string().required(),
+  }).options({ allowUnknown: true })
+)
+@ResponseSchemaMap({
+  [HTTP_STATUS_OK]: Joi.object({
+    body: Joi.string().required(),
+  }).options({ allowUnknown: true }),
+})
+@ResponseSchema(
+  Joi.object({
+    body: Joi.string().allow("").required(),
+  }).options({ allowUnknown: true }),
+  HTTP_STATUS_BAD_REQUEST
+)
+export class ValidationHandler implements ApiHandler {
+  public async invoke(
+    @Header("Host") host: string,
+    @Header("Pragma") body: string
+  ): Promise<HttpResponse> {
+    if (host === "bad") {
+      return badRequest();
+    }
+
+    return okResponse({ body });
+  }
+}
+
+@RestApi
+@Auth((context) => {
+  if (!context.event.body) {
+    throw new Error();
+  }
+})
+export class AuthHandler implements ApiHandler {
+  public async invoke(): Promise<HttpResponse> {
+    return okResponse();
   }
 }

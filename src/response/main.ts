@@ -1,9 +1,8 @@
 import { constants } from "http2";
 
-import { HttpResponse } from "../annotations/rest-api";
+import { HttpResponse } from "../annotations/api-handler";
 
 import { ResponseValues } from "./types";
-import { stringifyBody, stringifyBodyWithDefault } from "./utils";
 
 const {
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
@@ -19,7 +18,7 @@ export function okResponse(values: ResponseValues = {}): HttpResponse {
     multiValueHeaders: values.multiValueHeaders,
     isBase64Encoded: values.isBase64Encoded,
     statusCode: HTTP_STATUS_OK,
-    body: stringifyBody(values.body),
+    body: values.body,
   };
 }
 
@@ -29,11 +28,11 @@ export function internalError(values: ResponseValues = {}): HttpResponse {
     multiValueHeaders: values.multiValueHeaders,
     isBase64Encoded: values.isBase64Encoded,
     statusCode: HTTP_STATUS_INTERNAL_SERVER_ERROR,
-    body: stringifyBodyWithDefault(values.body, {
+    body: values.body ?? {
       statusCode: HTTP_STATUS_INTERNAL_SERVER_ERROR,
       error: "InternalServerError",
       message: "Internal server error.",
-    }),
+    },
   };
 }
 
@@ -43,11 +42,11 @@ export function badRequest(values: ResponseValues = {}): HttpResponse {
     multiValueHeaders: values.multiValueHeaders,
     isBase64Encoded: values.isBase64Encoded,
     statusCode: HTTP_STATUS_BAD_REQUEST,
-    body: stringifyBodyWithDefault(values.body, {
+    body: values.body ?? {
       statusCode: HTTP_STATUS_BAD_REQUEST,
       error: "BadRequest",
       message: "Invalid request.",
-    }),
+    },
   };
 }
 
@@ -57,11 +56,11 @@ export function unauthorized(values: ResponseValues = {}): HttpResponse {
     multiValueHeaders: values.multiValueHeaders,
     isBase64Encoded: values.isBase64Encoded,
     statusCode: HTTP_STATUS_UNAUTHORIZED,
-    body: stringifyBodyWithDefault(values.body, {
+    body: values.body ?? {
       statusCode: HTTP_STATUS_UNAUTHORIZED,
       error: "Unauthorized",
       message: "Request requires authentication.",
-    }),
+    },
   };
 }
 
@@ -71,10 +70,10 @@ export function forbidden(values: ResponseValues = {}): HttpResponse {
     multiValueHeaders: values.multiValueHeaders,
     isBase64Encoded: values.isBase64Encoded,
     statusCode: HTTP_STATUS_FORBIDDEN,
-    body: stringifyBodyWithDefault(values.body, {
+    body: values.body ?? {
       statusCode: HTTP_STATUS_FORBIDDEN,
       error: "Forbidden",
       message: "Request entitlements not met.",
-    }),
+    },
   };
 }
