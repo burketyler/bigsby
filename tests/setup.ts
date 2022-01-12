@@ -1,4 +1,4 @@
-import { setConfig } from "../src/utils";
+import { setConfig } from "../src/config";
 
 setConfig({
   logger: {

@@ -1,6 +1,8 @@
 import { fail, success, Throwable } from "ts-injection";
 
-import { TypeCoercionError } from "../types";
+import { InferredType, TypeCoercionError } from "../types";
+
+import { isObject } from "./reflection";
 
 export function tryStringify(
   value: unknown
@@ -49,5 +51,35 @@ export function tryParseObject(
     return success(JSON.parse(value as string));
   } catch (error) {
     return fail(new TypeCoercionError(error.message));
+  }
+}
+
+export function parseValueAsType<ParsedType>(
+  value: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+  type: InferredType | undefined
+): Throwable<
+  TypeCoercionError,
+  | ParsedType
+  | string
+  | number
+  | boolean
+  | never[]
+  | Record<string, unknown>
+  | undefined
+  | null
+> {
+  switch (type) {
+    case InferredType.NUMBER:
+      return tryParseNumber(value);
+    case InferredType.BOOLEAN:
+      return success(value === "true");
+    case InferredType.ARRAY:
+    case InferredType.OBJECT:
+      return isObject(value) || Array.isArray(value)
+        ? success(value)
+        : tryParseObject(value);
+    case InferredType.STRING:
+    default:
+      return success(value);
   }
 }

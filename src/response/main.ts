@@ -1,6 +1,6 @@
 import { constants } from "http2";
 
-import { HttpResponse } from "../annotations/api-handler";
+import { HttpResponse } from "../api";
 
 import { ResponseValues } from "./types";
 

@@ -20,6 +20,15 @@ export class RequestParseError extends Error {
   }
 }
 
+export class ApiVersionError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "ApiVersionError";
+    Object.setPrototypeOf(this, ApiVersionError.prototype);
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
 export class ResponseParseError extends Error {
   constructor(message?: string) {
     super(message);

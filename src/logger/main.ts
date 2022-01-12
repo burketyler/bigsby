@@ -2,11 +2,21 @@
 
 import Pino, { Logger as PinoLogger, LogFn, stdSerializers } from "pino";
 
-import { getConfig } from "../utils";
+import { getConfig } from "../config";
 
 import { bindings } from "./utils";
 
-export class Logger {
+let logger: Logger | undefined;
+
+export function useLogger(): { logger: Logger } {
+  if (!logger) {
+    logger = new Logger();
+  }
+
+  return { logger };
+}
+
+class Logger {
   public trace: LogFn;
 
   public debug: LogFn;

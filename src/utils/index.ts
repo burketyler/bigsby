@@ -3,5 +3,10 @@ export {
   getInferredTypesForClassMethod,
   isObject,
 } from "./reflection";
-export { getConfig, setConfig, onInit } from "./instance";
-export { tryParseObject, tryParseNumber, tryStringify } from "./parsing";
+export { onInit } from "./instance";
+export {
+  tryParseObject,
+  tryParseNumber,
+  tryStringify,
+  parseValueAsType,
+} from "./parsing";

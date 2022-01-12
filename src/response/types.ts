@@ -1,3 +1,3 @@
-import { HttpResponse } from "../annotations/api-handler";
+import { HttpResponse } from "../api";
 
 export type ResponseValues = Omit<HttpResponse, "statusCode">;

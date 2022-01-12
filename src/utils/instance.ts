@@ -1,24 +1,12 @@
-import merge from "lodash.merge";
+import { BigsbyConfig } from "../config";
 
-import { defaultConfig } from "../default-config";
-import { BigsbyConfig, DeepPartial } from "../types";
-
-let config = defaultConfig;
 let hasInitialized = false;
 
-export function setConfig(configPatch: DeepPartial<BigsbyConfig>): void {
-  config = merge(config, configPatch);
-}
-
-export function getConfig(): BigsbyConfig {
-  return config;
-}
-
-export function onInit(): void {
+export function onInit(config: BigsbyConfig): void {
   if (hasInitialized) {
     return;
   }
 
-  config.apiHandler?.lifecycle?.onInit?.();
+  config.api?.lifecycle?.onInit?.();
   hasInitialized = true;
 }

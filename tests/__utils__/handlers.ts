@@ -2,23 +2,20 @@
 import { constants } from "http2";
 import Joi from "joi";
 
-import {
-  HttpResponse,
-  RestApi,
-  ApiHandler,
-} from "../../src/annotations/api-handler";
-import { Auth } from "../../src/annotations/auth";
-import { Body, Header, Path, Query } from "../../src/annotations/mapping";
+import { HttpResponse, Api, ApiHandler } from "../../src/api";
+import { Auth } from "../../src/auth";
+import { Body, Header, Path, Query } from "../../src/mapping";
+import { badRequest, okResponse } from "../../src/response";
 import {
   RequestSchema,
   ResponseSchema,
   ResponseSchemaMap,
-} from "../../src/annotations/validation";
-import { badRequest, okResponse } from "../../src/response";
+} from "../../src/validation";
+import { Version } from "../../src/version";
 
 const { HTTP_STATUS_OK, HTTP_STATUS_BAD_REQUEST } = constants;
 
-@RestApi
+@Api
 export class SuccessHandler implements ApiHandler {
   public spyOnMeUnhandled(): void {}
 
@@ -67,12 +64,10 @@ export class SuccessHandler implements ApiHandler {
   }
 }
 
-@RestApi
-@RequestSchema(
-  Joi.object({
-    body: Joi.string().required(),
-  }).options({ allowUnknown: true })
-)
+@Api
+@RequestSchema({
+  body: Joi.string().required().options({ allowUnknown: true }),
+})
 @ResponseSchemaMap({
   [HTTP_STATUS_OK]: Joi.object({
     body: Joi.string().required(),
@@ -97,7 +92,7 @@ export class ValidationHandler implements ApiHandler {
   }
 }
 
-@RestApi
+@Api
 @Auth((context) => {
   if (!context.event.body) {
     throw new Error();
@@ -106,5 +101,25 @@ export class ValidationHandler implements ApiHandler {
 export class AuthHandler implements ApiHandler {
   public async invoke(): Promise<HttpResponse> {
     return okResponse();
+  }
+}
+
+@Api
+@Version("v1")
+export class Version1Handler implements ApiHandler {
+  public async invoke(): Promise<HttpResponse> {
+    return okResponse({
+      body: "v1",
+    });
+  }
+}
+
+@Api
+@Version("v2")
+export class Version2Handler implements ApiHandler {
+  public async invoke(): Promise<HttpResponse> {
+    return okResponse({
+      body: "v2",
+    });
   }
 }
