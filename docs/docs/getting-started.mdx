@@ -9,14 +9,14 @@ API Gateway triggered AWS Lambda function using the Bigsby library.
 
 ### Pre-requisites
 
-If you haven't already, please complete the steps in [setup](../setup).
+If you haven't already, please complete the steps in [setup](./setup.mdx).
 
 ## Step 1: Create a Bigsby instance
 
 The main purpose of the Bigsby instance is to act as a factory for handler functions.
 It contains configuration that will be applied to each handler created by the instance,
 and its own isolated and unique dependency
-[injection container](https://burketyler.github.io/ts-injection/usage#creating-an-injection-container).
+[injection container](https://burketyler.github.io/ts-injection/docs/usage#creating-an-injection-container).
 
 Defining an instance is as simple as creating a new Bigsby class. If your app consists of
 functions that require vastly different configuration, e.g. public vs private APIs, you can
@@ -28,7 +28,7 @@ const bigsby = new Bigsby();
 
 It's common that you will need to add configuration applicable to each handler in your
 application, this can be defined as a constructor argument to the instance, or at any point
-after initialization. See [configuration](/usage/configuration) for more information.
+after initialization. See [configuration](./usage/configuration.mdx) for more information.
 
 ```typescript
 const bigsby = new Bigsby({
@@ -65,7 +65,7 @@ class ArnyQuotesHandler implements ApiHandler {
 
 The above handler is injecting a service dependency via the `Autowire` decorator
 and parsing a request object from the event payload using the `Body` decorator. You can learn
-more about [dependency injection](/usage/dependency-injection) and [event parsing](/usage/event-parsing)
+more about [dependency injection](./usage/dependency-injection.mdx) and [event parsing](./usage/event-parsing.mdx)
 in their respective sections.
 
 ## Step 3: Create handler function

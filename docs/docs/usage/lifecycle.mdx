@@ -37,24 +37,24 @@ The `preInvoke` hook chain is called before any other stage in the lifecycle, on
 
 ### preAuth
 
-The `preAuth` hook chain is called immediately prior to any [authenticator](./authentication#authenticators) or
-[AuthScheme](./authentication#auth-scheme) attached to a handler. If no authentication is attached to the handler,
+The `preAuth` hook chain is called immediately prior to any [authenticator](./authentication.mdx#authenticators) or
+[AuthScheme](./authentication.mdx#auth-scheme) attached to a handler. If no authentication is attached to the handler,
 it won't be called.
 
 ### onAuthFail
 
 The `onAuthFail` hook chain is called when a request fails authentication. In addition to the request context,
-it receives the [Error](./authentication#denying-a-request) thrown by the authenticator.
+it receives the [Error](./authentication.mdx#denying-a-request) thrown by the authenticator.
 
 ### preValidate
 
-The `preValidate` hook chain is called immediately prior to request [validation](./validation#request). If no request
+The `preValidate` hook chain is called immediately prior to request [validation](./validation.mdx#request). If no request
 validation is attached to the handler, it won't be called.
 
 ### preParse
 
 The `preParse` hook chain is called immediately prior to processing the incoming API Gateway event payload, including
-the execution of any [event parsing](./event-parsing) instructions.
+the execution of any [event parsing](./event-parsing.mdx) instructions.
 
 ### onRequestInvalid
 

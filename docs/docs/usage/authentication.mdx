@@ -46,13 +46,13 @@ is applicable by throwing the corresponding error type:
 
 Any value can be thrown from an authenticator. By default, Bigsby will return a `401` if
 the error type isn't recognized. This behaviour can be overridden by listening to the `onAuthFail`
-[lifecycle](./lifecycle) hook and returning a custom `ApiResponse`.
+[lifecycle](./lifecycle.mdx) hook and returning a custom `ApiResponse`.
 
 ### Session Information
 
 Authenticators receive the Bigsby `RequestContext`, giving full access to the values required
 to verify a request and the ability to store session metadata, user information, etc.
-for consumption later in the request's [lifecycle](./lifecycle).
+for consumption later in the request's [lifecycle](./lifecycle.mdx).
 
 ## Auth Scheme
 

@@ -10,12 +10,12 @@ const config = {
   tagline: "bigsby documentation",
   url: "https://burketyler.github.io",
   baseUrl: "/bigsby/",
-  onBrokenLinks: "throw",
-  onBrokenMarkdownLinks: "warn",
-  favicon: "img/favicon-32x32.png",
-  organizationName: "burketyler",
-  projectName: "Bigsby",
   trailingSlash: false,
+  projectName: "burketyler.github.io",
+  organizationName: "burketyler",
+  favicon: "img/favicon-32x32.png",
+  onBrokenLinks: "warn",
+  onBrokenMarkdownLinks: "warn",
 
   presets: [
     [
