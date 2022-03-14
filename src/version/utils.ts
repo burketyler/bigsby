@@ -1,5 +1,9 @@
-import { BigsbyConfig } from "../bigsby";
-import { ApiEvent, ApiHandlerConstructor, HandlerClassesInput } from "../types";
+import {
+  ApiEvent,
+  ApiHandlerConstructor,
+  BigsbyConfig,
+  HandlerClassesInput,
+} from "../types";
 
 export function getApiVersion(
   event: ApiEvent,

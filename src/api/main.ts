@@ -1,7 +1,7 @@
 import { injectable } from "ts-injection";
 
-import { ApiConfig } from "../bigsby";
 import {
+  ApiConfig,
   ApiHandlerConstructor,
   DeepPartial,
   InjectableMetadata,

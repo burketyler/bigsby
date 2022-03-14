@@ -1,10 +1,10 @@
 import { Logger } from "pino";
 import { fail, success, Throwable } from "ts-injection";
 
-import { BigsbyConfig } from "../bigsby";
 import {
   ApiEvent,
   ApiHandlerConstructor,
+  BigsbyConfig,
   HandlerClassesInput,
   InjectableMetadata,
 } from "../types";

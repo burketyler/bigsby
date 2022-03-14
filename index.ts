@@ -10,7 +10,6 @@ export {
   ReqSchema,
 } from "./src/validation";
 export { Version, V } from "./src/version";
-export { BigsbyConfig, ApiConfig } from "./src/bigsby";
 export {
   ok,
   created,
@@ -38,6 +37,8 @@ export {
   AuthenticationError,
   ResponseParseError,
   RequestParseError,
+  BigsbyConfig,
+  ApiConfig,
   ResponseInvalidError,
   RequestInvalidError,
   TypeCoercionError,
