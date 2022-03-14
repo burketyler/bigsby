@@ -1,0 +1,114 @@
+{
+  "name": "bigsby",
+  "version": "0.1.0",
+  "description": "Bigsby is the cutest NodeJS Lambda library on the block. Parsing, validation, auth, DI, versioning, hooks and more.",
+  "main": ".build/index.js",
+  "types": ".build/index.d.ts",
+  "author": "burketyler",
+  "license": "MIT",
+  "files": [
+    ".build"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "aws",
+    "bigsby",
+    "lambda functions",
+    "decorators",
+    "typescript",
+    "plugins",
+    "versioning",
+    "parsing",
+    "validation",
+    "dependenci injection",
+    "authentication",
+    "middleware"
+  ],
+  "scripts": {
+    "prettier:check": "prettier --check src/**/*.ts --loglevel error",
+    "prettier:fix": "prettier --write src/**/*.ts",
+    "lint:check": "eslint -c .eslintrc src/**/*.ts",
+    "lint:fix": "eslint --fix -c .eslintrc src/**/*.ts",
+    "code:check": "yarn prettier:check && yarn lint:check",
+    "code:fix": "yarn prettier:fix && yarn lint:fix",
+    "clean": "rm -rf .build",
+    "build": "yarn clean && tsc",
+    "test": "jest",
+    "precommit": "yarn code:fix",
+    "docs": "(cd docs && yarn start)",
+    "cm": "git-cz",
+    "prepare": "husky install"
+  },
+  "dependencies": {
+    "joi": "17.6.0",
+    "lodash.clonedeep": "4.5.0",
+    "lodash.mergewith": "4.6.2",
+    "pino": "7.8.1",
+    "ts-injection": "3.0.0",
+    "tslib": "2.3.1"
+  },
+  "peerDependencies": {
+    "aws-sdk": "2.1001.0"
+  },
+  "devDependencies": {
+    "@commitlint/config-conventional": "16.0.0",
+    "@semantic-release/changelog": "6.0.1",
+    "@semantic-release/git": "10.0.1",
+    "@types/aws-lambda": "8.10.89",
+    "@types/jest": "27.4.0",
+    "@types/lodash.clonedeep": "4.5.6",
+    "@types/lodash.mergewith": "4.6.6",
+    "@typescript-eslint/eslint-plugin": "5.9.0",
+    "@typescript-eslint/parser": "5.9.0",
+    "aws-sdk": "2.1001.0",
+    "commitizen": "4.2.4",
+    "commitlint": "16.0.1",
+    "cz-customizable": "6.3.0",
+    "eslint": "8.6.0",
+    "eslint-config-airbnb": "19.0.4",
+    "eslint-config-airbnb-typescript": "16.1.0",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-import": "2.25.4",
+    "eslint-plugin-prettier": "4.0.0",
+    "husky": "7.0.4",
+    "jest": "27.4.5",
+    "pino-pretty": "7.3.0",
+    "prettier": "2.5.1",
+    "semantic-release": "18.0.1",
+    "source-map-support": "0.5.21",
+    "ts-jest": "27.1.2",
+    "ts-node": "10.4.0",
+    "typescript": "4.5.4"
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-customizable"
+    },
+    "cz-customizable": {
+      "config": "commitizen.config.js"
+    }
+  },
+  "release": {
+    "branches": [
+      "master"
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      [
+        "@semantic-release/git",
+        {
+          "assets": [
+            "package.json",
+            "CHANGELOG.md"
+          ],
+          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+        }
+      ]
+    ]
+  }
+}

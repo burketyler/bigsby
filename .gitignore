@@ -1,0 +1,14 @@
+#IDE
+.idea
+.DS_Store
+
+# package directories
+node_modules
+jspm_packages
+yarn-error.log
+
+# Build directories
+.build
+
+# Testing
+coverage

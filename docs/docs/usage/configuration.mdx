@@ -1,0 +1,117 @@
+# Configuration
+
+Configuration in Bigsby follows a cascading pattern running from the top level, the [default config](#default-config),
+to the bottom level [decorated config](#decorated-config). The configs defined at each level are merged on top of
+the previous level.
+
+<div style={{ display: "flex", justifyContent: "center" }}>
+  <a href={"/bigsby/img/config-diagram.png"} target={"_blank"}>
+    <img
+      src={"/bigsby/img/config-diagram.png"}
+      style={{ height: "25rem" }}
+      alt={"Request Lifecycle"}
+    />
+  </a>
+</div>
+
+## Default Config
+
+A Bigsby instance is bootstrapped with default configuration settings for important functionality:
+
+- `request.enableTypeCoercion = true`
+- `response.enableInferContentType = true`
+
+## Instance Config
+
+When creating a Bigsby instance, it's possible to specify configuration for Bigsby itself, as well as options
+that will be inherited by every handler created by the instance.
+
+```typescript
+const bigsby = new Bigsby({
+  api: {
+    response: {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET",
+      },
+    },
+  },
+});
+```
+
+At any point after creation, you can reset the settings of your Bigsby instance using the `setConfig`
+method. This will result in all previous configurations being erased, and the inputs configurations being merged
+directly on top of the [default configs](#default-configs).
+
+```typescript
+bigsby.setConfig({
+  api: {
+    response: {
+      headers: {
+        "Access-Control-Allow-Origin": "https://mydomain.com",
+        "Access-Control-Allow-Methods": "POST",
+      },
+    },
+  },
+});
+```
+
+It's possible to merge a new set of configs onto the existing instance configs without resetting them using
+the `patchConfig` method.
+
+```typescript
+bigsby.patchConfig({
+  api: {
+    response: {
+      headers: {
+        "Access-Control-Allow-Methods": "*",
+      },
+    },
+  },
+});
+```
+
+## Inline Config
+
+Inline configuration can be set directly on a handler by providing a config object when creating the handler
+using `createApiHandler`. Configs set at this level will take precedence over those set at the instance level.
+
+```typescript
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  public async invoke(): Promise<string> {
+    return getQuote();
+  }
+}
+
+export default bigsby.createApiHandler(ArnyQuotesHandler, {
+  lifecycle: {
+    onError: [sendAlert],
+  },
+});
+```
+
+## Decorated Config
+
+Decorating your handler classes is another method of providing configuration. Similar to [inline config](#inline-config)
+you can provide configs directly to your handler, but instead by adding them as an argument to the `@Api` decorator.
+
+```typescript
+@Api({
+  lifecycle: {
+    onError: [sendAlert],
+  },
+})
+class ArnyQuotesHandler implements ApiHandler {
+  public async invoke(): Promise<string> {
+    return getQuote();
+  }
+}
+
+export default bigsby.createApiHandler(ArnyQuotesHandler);
+```
+
+More specific settings like [authentication](./authentication.mdx), [validation](./validation.mdx), and [versioning](./versioning.mdx)
+use their specialised decorators to apply the configuration and are interpreted by Bigsby when creating the handler.
+
+All decorated configs take precedence over those set at the [inline](#inline-config) or [instance](#instance-config) level.

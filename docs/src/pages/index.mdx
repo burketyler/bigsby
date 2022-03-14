@@ -1,0 +1,84 @@
+---
+## title: Bigsby
+---
+
+import ImageSwitcher from "../components/ImageSwitcher";
+import LogoContainer from "../components/LogoContainer";
+import Badges from "../components/Badges";
+
+<LogoContainer>
+  <ImageSwitcher
+    darkImageSrc={"/bigsby/img/bigsby-logo-dark.svg"}
+    lightImageSrc={"/bigsby/img/bigsby-logo-light.svg"}
+    alt={"Bigsby logo"}
+    width={"20em"}
+  />
+</LogoContainer>
+
+<Badges />
+
+Bigsby is the cutest NodeJS Lambda library on the block. Written in Typescript,
+heavily leveraging decorators and classes, it might not be everyone's cup of 🫖, but its purpose is to
+🧙‍🪄 away the heavy lifting and let you focus on the important stuff.
+
+## Show me some code
+
+```typescript
+const bigsby = new Bigsby();
+
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  @Autowire(ArnyService)
+  private service!: ArnyService;
+
+  @ReqSchema(requestSchema)
+  @ResSchema(200, responseSchema)
+  public async invoke(@Body() request: GetQuoteRequest): Promise<string> {
+    return this.service.getQuote(request.movie);
+  }
+}
+
+const handler = bigsby.createApiHandler(ArnyQuotesHandler);
+```
+
+## Features
+
+### 💉 [Injection](/docs/usage/dependency-injection)
+
+Bigsby uses [ts-injection](https://burketyler.github.io/ts-injection/) under the hood to provide an
+easy to use, intuitive and clean dependency injection interface.
+
+### 🔎 [Parsing](/docs/usage/event-parsing)
+
+Use a comprehensive set of decorators to map API Gateway events into the parameters your handler
+needs, resulting in concise, clean and easy to read code.
+
+### 👮 [Validation](/docs/usage/validation)
+
+Leveraging [Joi's](https://joi.dev/) powerful schema description language, Bigsby makes it easy
+to define complex request and response schemas.
+
+### 🔢 [Versioning](/docs/usage/versioning)
+
+Support for header or path based versioning is available out of the box with Bigsby.
+You define the mapping, and we'll worry about getting the request to the right handler version.
+
+### 🔐 [Authentication](/docs/usage/authentication)
+
+Register authentication methods to secure your APIs. Assign these methods at the global level,
+to an individual handler, or even to a specific version of a handler.
+
+### 🪝 [Lifecycle](/docs/usage/lifecycle)
+
+Tap into a diverse range of hooks exposed throughout Bigsby's request lifecycle. It's simple to
+build highly customizable execution flows.
+
+:::warning
+
+🐶 Bigsby is a young framework that still has some growing up to do. It's likely that things will
+change somewhat rapidly and potentially in major ways before it reaches a production-ready
+level of maturity.
+
+At the moment, it's not recommended for production workloads.
+
+:::
