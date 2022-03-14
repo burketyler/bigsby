@@ -1,0 +1,30 @@
+---
+id: setup
+---
+
+# Setup
+
+## Installation
+
+```shell
+  npm install bigsby
+
+  # or
+
+  yarn install bigsby
+```
+
+## Configuration
+
+Make sure your tsconfig.json contains
+
+```json
+{
+  "experimentalDecorators": true,
+  "emitDecoratorMetadata": true
+}
+```
+
+Dependency Injection will trigger typescript's `strictPropertyInitialization` in classes if you use field injection.
+You can use `!` to bypass this, and if you're using eslint you might want to consider turning off
+`@typescript-eslint/no-non-null-assertion`.

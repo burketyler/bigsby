@@ -1,2 +1,8 @@
-export { RequestSchema, ResponseSchema, ResponseSchemaMap } from "./main";
-export { validateRequest, validateResponse } from "./utils";
+export {
+  RequestSchema,
+  ResponseSchema,
+  ReqSchema,
+  ResSchema,
+  validateRequest,
+  validateResponse,
+} from "./main";

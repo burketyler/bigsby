@@ -6,10 +6,10 @@ import {
 import { constants } from "http2";
 import { fail } from "ts-injection";
 
-import { createHandler } from "../../src/api";
-import * as Api from "../../src/api/utils";
-import { defaultConfig } from "../../src/config";
+import { BigsbyInstance } from "../../src/bigsby";
+import { Bigsby } from "../../src/bigsby/main";
 import * as Response from "../../src/response";
+import { ResponseBuilder } from "../../src/response";
 import { testAwsData } from "../__data__/test-aws-data";
 import { SuccessHandler } from "../__utils__/handlers";
 
@@ -19,64 +19,54 @@ const {
   apiGw: { eventV1, contextV1 },
 } = testAwsData;
 
+const mockOnInit = [jest.fn(), jest.fn()];
+const mockPreInvoke = [jest.fn(), jest.fn()];
+const mockPreAuth = [jest.fn(), jest.fn()];
+const mockPreVal = [jest.fn(), jest.fn()];
+const mockPreParse = [jest.fn(), jest.fn()];
+const mockPreExe = [jest.fn(), jest.fn()];
+const mockPreRes = [jest.fn(), jest.fn()];
+const mockOnError = [jest.fn(), jest.fn()];
+const mockOnAuthFail = [jest.fn(), jest.fn()];
+const mockOnRequestInvalid = [jest.fn(), jest.fn()];
+const mockOnResponseInvalid = [jest.fn(), jest.fn()];
+
 describe("Lifecycle tests", () => {
-  let handler: HandlerFunction;
+  let bigsby: Bigsby;
   let mockAuth: jest.Mock;
-  let mockEvent: APIGatewayProxyEvent;
   let mockContext: Context;
-  let mockOnInit: jest.Mock;
-  let mockPreInvoke: jest.Mock;
-  let mockPreAuth: jest.Mock;
-  let mockPreValidate: jest.Mock;
-  let mockPreParse: jest.Mock;
-  let mockPreExecute: jest.Mock;
-  let mockPreResponse: jest.Mock;
-  let mockOnError: jest.Mock;
-  let mockOnAuthFail: jest.Mock;
-  let mockOnRequestInvalid: jest.Mock;
-  let mockOnResponseInvalid: jest.Mock;
+  let handler: HandlerFunction;
   let mockValidateRequest: jest.Mock;
   let mockValidateResponse: jest.Mock;
+  let mockEvent: APIGatewayProxyEvent;
 
   beforeAll(() => {
-    mockOnInit = jest.fn();
+    bigsby = new Bigsby();
     mockAuth = jest.fn();
-    mockPreInvoke = jest.fn();
-    mockPreAuth = jest.fn();
-    mockPreValidate = jest.fn();
-    mockPreParse = jest.fn();
-    mockPreExecute = jest.fn();
-    mockPreResponse = jest.fn();
-    mockOnError = jest.fn();
-    mockOnAuthFail = jest.fn();
-    mockOnRequestInvalid = jest.fn();
-    mockOnResponseInvalid = jest.fn();
     mockValidateRequest = jest.fn();
     mockValidateResponse = jest.fn();
-    handler = createHandler(SuccessHandler, {
-      api: {
-        request: {
-          auth: mockAuth,
-          schema: { body: { validate: mockValidateRequest } } as any,
+    handler = bigsby.createApiHandler(SuccessHandler, {
+      request: {
+        auth: mockAuth,
+        schema: { body: { validate: mockValidateRequest } } as any,
+      },
+      response: {
+        schema: {
+          [HTTP_STATUS_OK]: { validate: mockValidateResponse } as any,
         },
-        response: {
-          schema: {
-            [HTTP_STATUS_OK]: { validate: mockValidateResponse } as any,
-          },
-        },
-        lifecycle: {
-          onInit: mockOnInit,
-          preInvoke: mockPreInvoke,
-          preAuth: mockPreAuth,
-          preValidate: mockPreValidate,
-          preParse: mockPreParse,
-          preExecute: mockPreExecute,
-          preResponse: mockPreResponse,
-          onError: mockOnError,
-          onAuthFail: mockOnAuthFail,
-          onRequestInvalid: mockOnRequestInvalid,
-          onResponseInvalid: mockOnResponseInvalid,
-        },
+      },
+      lifecycle: {
+        onInit: mockOnInit,
+        preInvoke: mockPreInvoke,
+        preAuth: mockPreAuth,
+        preValidate: mockPreVal,
+        preParse: mockPreParse,
+        preExecute: mockPreExe,
+        preResponse: mockPreRes,
+        onError: mockOnError,
+        onAuthFail: mockOnAuthFail,
+        onRequestInvalid: mockOnRequestInvalid,
+        onResponseInvalid: mockOnResponseInvalid,
       },
     });
   });
@@ -92,18 +82,30 @@ describe("Lifecycle tests", () => {
     jest.resetAllMocks();
   });
 
-  describe("When first initialized", () => {
-    beforeAll(async () => {
+  describe("When function first initialized", () => {
+    it("Should call onInit only on first invoke, and as the first hook and with the correct input", async () => {
       await Promise.all([
         handler(mockEvent, mockContext, () => {}),
         handler(mockEvent, mockContext, () => {}),
       ]);
-    });
 
-    it("Should call onInit only in first invoke, and as the first hook and with the corret input", () => {
-      expect(mockOnInit).toHaveBeenCalledWith();
-      expect(mockOnInit.mock.invocationCallOrder[0]).toEqual(1);
-      expect(mockOnInit).toHaveBeenCalledTimes(1);
+      expect(mockOnInit[0]).toHaveBeenCalledWith(
+        expect.objectContaining({
+          bigsby: expect.any(BigsbyInstance),
+        })
+      );
+      expect(mockOnInit[0]).toHaveBeenCalledTimes(2);
+      expect(mockOnInit[0].mock.invocationCallOrder[0]).toEqual(1);
+      expect(mockOnInit[0].mock.invocationCallOrder[1]).toEqual(2);
+
+      expect(mockOnInit[1]).toHaveBeenCalledWith(
+        expect.objectContaining({
+          bigsby: expect.any(BigsbyInstance),
+        })
+      );
+      expect(mockOnInit[1]).toHaveBeenCalledTimes(2);
+      expect(mockOnInit[1].mock.invocationCallOrder[0]).toEqual(3);
+      expect(mockOnInit[1].mock.invocationCallOrder[1]).toEqual(4);
     });
   });
 
@@ -111,71 +113,164 @@ describe("Lifecycle tests", () => {
     it("Should call each lifecycle stage in order", async () => {
       await handler(mockEvent, mockContext, () => {});
 
-      const mockPreInvokeOrder = mockPreInvoke.mock.invocationCallOrder[0];
-      const mockPreAuthOrder = mockPreAuth.mock.invocationCallOrder[0];
-      const mockAuthOrder = mockAuth.mock.invocationCallOrder[0];
-      const mockPreParseOrder = mockPreParse.mock.invocationCallOrder[0];
-      const mockPreValidateOrder = mockPreValidate.mock.invocationCallOrder[0];
-      const mockValReqOrder = mockValidateRequest.mock.invocationCallOrder[0];
-      const mockPreExecuteOrder = mockPreExecute.mock.invocationCallOrder[0];
-      const mockValResOrder = mockValidateResponse.mock.invocationCallOrder[0];
-      const mockPreResponseOrder = mockPreResponse.mock.invocationCallOrder[0];
+      const mockPreAuth1Order = mockPreAuth[0].mock.invocationCallOrder[0];
+      const mockPreAuth2Order = mockPreAuth[1].mock.invocationCallOrder[0];
 
-      expect(mockPreInvokeOrder).toBeLessThan(mockPreAuthOrder);
-      expect(mockPreAuthOrder).toBeLessThan(mockAuthOrder);
-      expect(mockAuthOrder).toBeLessThan(mockPreValidateOrder);
-      expect(mockPreValidateOrder).toBeLessThan(mockValReqOrder);
-      expect(mockValReqOrder).toBeLessThan(mockPreParseOrder);
-      expect(mockPreParseOrder).toBeLessThan(mockPreExecuteOrder);
-      expect(mockPreExecuteOrder).toBeLessThan(mockValResOrder);
-      expect(mockValResOrder).toBeLessThan(mockPreResponseOrder);
-      expect(mockPreResponseOrder).toBeGreaterThan(mockPreExecuteOrder);
+      const mockAuthOrder = mockAuth.mock.invocationCallOrder[0];
+
+      const mockPreVal1Order = mockPreVal[0].mock.invocationCallOrder[0];
+      const mockPreVal2Order = mockPreVal[1].mock.invocationCallOrder[0];
+
+      const mockValReqOrder = mockValidateRequest.mock.invocationCallOrder[0];
+
+      const mockPreParse1Order = mockPreParse[0].mock.invocationCallOrder[0];
+      const mockPreParse2Order = mockPreParse[1].mock.invocationCallOrder[0];
+
+      const mockPreExecute1Order = mockPreExe[0].mock.invocationCallOrder[0];
+      const mockPreExecute2Order = mockPreExe[1].mock.invocationCallOrder[0];
+
+      const mockValResOrder = mockValidateResponse.mock.invocationCallOrder[0];
+
+      const mockPreResponse1Order = mockPreRes[0].mock.invocationCallOrder[0];
+      const mockPreResponse2Order = mockPreRes[1].mock.invocationCallOrder[0];
+
+      expect(mockPreAuth1Order).toBeLessThan(mockPreAuth2Order);
+      expect(mockPreAuth2Order).toBeLessThan(mockAuthOrder);
+
+      expect(mockAuthOrder).toBeLessThan(mockPreVal1Order);
+
+      expect(mockPreVal1Order).toBeLessThan(mockPreVal2Order);
+      expect(mockPreVal2Order).toBeLessThan(mockValReqOrder);
+
+      expect(mockValReqOrder).toBeLessThan(mockPreParse1Order);
+
+      expect(mockPreParse1Order).toBeLessThan(mockPreParse2Order);
+      expect(mockPreParse2Order).toBeLessThan(mockPreExecute1Order);
+
+      expect(mockPreExecute1Order).toBeLessThan(mockPreExecute2Order);
+      expect(mockPreExecute2Order).toBeLessThan(mockValResOrder);
+
+      expect(mockValResOrder).toBeLessThan(mockPreResponse1Order);
+
+      expect(mockPreResponse1Order).toBeLessThan(mockPreResponse2Order);
+      expect(mockPreResponse2Order).toBeGreaterThan(mockValResOrder);
     });
 
-    it("Should call each lifecycle stage once", async () => {
+    it("Should call each lifecycle stage once per hook", async () => {
       await handler(mockEvent, mockContext, () => {});
 
-      expect(mockPreInvoke).toHaveBeenCalledTimes(1);
-      expect(mockPreAuth).toHaveBeenCalledTimes(1);
+      expect(mockPreInvoke[0]).toHaveBeenCalledTimes(1);
+      expect(mockPreInvoke[1]).toHaveBeenCalledTimes(1);
+      expect(mockPreAuth[0]).toHaveBeenCalledTimes(1);
+      expect(mockPreAuth[1]).toHaveBeenCalledTimes(1);
       expect(mockAuth).toHaveBeenCalledTimes(1);
-      expect(mockPreValidate).toHaveBeenCalledTimes(1);
+      expect(mockPreVal[0]).toHaveBeenCalledTimes(1);
+      expect(mockPreVal[1]).toHaveBeenCalledTimes(1);
       expect(mockValidateRequest).toHaveBeenCalledTimes(1);
-      expect(mockPreParse).toHaveBeenCalledTimes(1);
-      expect(mockPreExecute).toHaveBeenCalledTimes(1);
+      expect(mockPreParse[0]).toHaveBeenCalledTimes(1);
+      expect(mockPreParse[1]).toHaveBeenCalledTimes(1);
+      expect(mockPreExe[0]).toHaveBeenCalledTimes(1);
+      expect(mockPreExe[1]).toHaveBeenCalledTimes(1);
       expect(mockValidateResponse).toHaveBeenCalledTimes(1);
-      expect(mockPreResponse).toHaveBeenCalledTimes(1);
+      expect(mockPreRes[0]).toHaveBeenCalledTimes(1);
+      expect(mockPreRes[1]).toHaveBeenCalledTimes(1);
     });
 
     it("Should call each lifecycle stage with correct inputs", async () => {
       await handler(mockEvent, mockContext, () => {});
 
-      const mockRestContext = {
-        event: Api.standardizeEvent(mockEvent),
-        context: mockContext,
-        config: defaultConfig,
-      };
+      const expectedContext = expect.objectContaining({
+        rawEvent: expect.any(Object),
+        event: expect.any(Object),
+        apiGwContext: expect.any(Object),
+        config: expect.any(Object),
+        bigsby: expect.any(BigsbyInstance),
+      });
 
-      expect(mockPreInvoke).toHaveBeenCalledWith(mockEvent, mockContext);
-      expect(mockPreAuth).toHaveBeenCalledWith(mockRestContext);
-      expect(mockAuth).toHaveBeenCalledWith(mockRestContext);
-      expect(mockPreValidate).toHaveBeenCalledWith(mockRestContext);
+      expect(mockPreInvoke[0]).toHaveBeenCalledWith(
+        expect.objectContaining({
+          context: expectedContext,
+        })
+      );
+      expect(mockPreAuth[0]).toHaveBeenCalledWith(
+        expect.objectContaining({
+          context: expectedContext,
+        })
+      );
+      expect(mockAuth).toHaveBeenCalledWith(expectedContext);
+      expect(mockPreVal[0]).toHaveBeenCalledWith(
+        expect.objectContaining({ context: expectedContext })
+      );
       expect(mockValidateRequest).toHaveBeenCalledWith(mockEvent.body);
-      expect(mockPreParse).toHaveBeenCalledWith(mockRestContext);
-      expect(mockPreExecute).toHaveBeenCalledWith(mockRestContext);
+      expect(mockPreParse[0]).toHaveBeenCalledWith(
+        expect.objectContaining({ context: expectedContext })
+      );
+      expect(mockPreExe[0]).toHaveBeenCalledWith(
+        expect.objectContaining({ context: expectedContext })
+      );
       expect(mockValidateResponse).toHaveBeenCalledWith(
         expect.objectContaining({
           body: expect.any(Object),
           statusCode: HTTP_STATUS_OK,
         })
       );
-      expect(mockPreResponse).toHaveBeenCalledWith(
+      expect(mockPreRes[0]).toHaveBeenCalledWith(
         expect.objectContaining({
-          body: expect.any(Object),
-          statusCode: HTTP_STATUS_OK,
-        }),
-        mockRestContext
+          response: expect.objectContaining({
+            body: expect.any(Object),
+            statusCode: HTTP_STATUS_OK,
+          }),
+          context: expectedContext,
+        })
       );
     });
+  });
+
+  describe("When a hook takes over the response", () => {
+    it("Should pass prevResponse to each hook in a hook chain", async () => {
+      const firstResponse = {
+        statusCode: 500,
+        body: "firstResponse",
+      };
+      const secondResponse = {
+        statusCode: 404,
+        body: "secondResponse",
+      };
+
+      mockPreAuth[0].mockResolvedValueOnce(firstResponse);
+      mockPreAuth[1].mockResolvedValueOnce(secondResponse);
+
+      const response = await handler(mockEvent, mockContext, () => {});
+
+      expect(mockPreAuth[1]).toHaveBeenCalledWith(
+        expect.objectContaining({
+          prevResponse: new ResponseBuilder(firstResponse),
+        })
+      );
+      expect(response).toEqual(expect.objectContaining(secondResponse));
+    });
+
+    it.each([
+      ["preInvoke", mockPreInvoke],
+      ["preAuth", mockPreAuth],
+      ["preValidate", mockPreVal],
+      ["preExecute", mockPreExe],
+      ["preResponse", mockPreRes],
+    ])(
+      "Should return the ApiResponse: %s",
+      async (name: string, mockHook: jest.Mock[]) => {
+        const apiResponse = {
+          statusCode: 500,
+          body: name,
+        };
+
+        mockHook[0].mockResolvedValueOnce(apiResponse);
+
+        const response = await handler(mockEvent, mockContext, () => {});
+
+        expect(response).toEqual(expect.objectContaining(apiResponse));
+      }
+    );
   });
 
   describe("When a handled error of an unknown type is returned as part of the lifecycle", () => {
@@ -194,7 +289,15 @@ describe("Lifecycle tests", () => {
     it("Should call the onError lifecycle hook", async () => {
       await handler(mockEvent, mockContext, () => {});
 
-      expect(mockOnError).toHaveBeenCalledWith(mockError);
+      expect(mockOnError[0]).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error: mockError,
+          context: expect.objectContaining({
+            config: expect.any(Object),
+            bigsby: expect.any(BigsbyInstance),
+          }),
+        })
+      );
     });
   });
 
@@ -206,7 +309,7 @@ describe("Lifecycle tests", () => {
     });
 
     beforeEach(() => {
-      mockPreInvoke.mockImplementationOnce(() => {
+      mockPreInvoke[0].mockImplementationOnce(() => {
         throw mockHookError;
       });
     });
@@ -214,8 +317,31 @@ describe("Lifecycle tests", () => {
     it("Should call the onError lifecycle hook", async () => {
       await handler(mockEvent, mockContext, () => {});
 
-      expect(mockOnError).toHaveBeenCalledWith(mockHookError);
-      expect(mockOnError).toHaveBeenCalledTimes(1);
+      expect(mockOnError[0]).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error: mockHookError,
+          context: expect.objectContaining({
+            config: expect.any(Object),
+            bigsby: expect.any(BigsbyInstance),
+          }),
+        })
+      );
+      expect(mockOnError[0]).toHaveBeenCalledTimes(1);
+    });
+
+    describe("When a onError hook takes over the response by returning an ApiResponse", () => {
+      it("Should return the ApiResponse", async () => {
+        const apiResponse = {
+          statusCode: 500,
+          body: "onError",
+        };
+
+        mockOnError[0].mockResolvedValueOnce(apiResponse);
+
+        const response = await handler(mockEvent, mockContext, () => {});
+
+        expect(response).toEqual(expect.objectContaining(apiResponse));
+      });
     });
   });
 
@@ -235,8 +361,27 @@ describe("Lifecycle tests", () => {
     it("Should call the onAuthFail and onError lifecycle hook", async () => {
       await handler(mockEvent, mockContext, () => {});
 
-      expect(mockOnAuthFail).toHaveBeenCalledWith(mockAuthError);
-      expect(mockOnError).toHaveBeenCalledWith(mockAuthError);
+      expect(mockOnAuthFail[0]).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error: mockAuthError,
+          context: expect.objectContaining({ config: expect.any(Object) }),
+        })
+      );
+    });
+
+    describe("When a onAuthFail hook takes over the response by returning an ApiResponse", () => {
+      it("Should return the ApiResponse", async () => {
+        const apiResponse = {
+          statusCode: 500,
+          body: "onAuthFail",
+        };
+
+        mockOnAuthFail[0].mockResolvedValueOnce(apiResponse);
+
+        const response = await handler(mockEvent, mockContext, () => {});
+
+        expect(response).toEqual(expect.objectContaining(apiResponse));
+      });
     });
   });
 
@@ -256,10 +401,31 @@ describe("Lifecycle tests", () => {
     it("Should call the onRequestInvalid and onError lifecycle hook", async () => {
       await handler(mockEvent, mockContext, () => {});
 
-      expect(mockOnRequestInvalid).toHaveBeenCalledWith(mockValidateError);
-      expect(mockOnRequestInvalid).toHaveBeenCalledTimes(1);
-      expect(mockOnError).toHaveBeenCalledWith(mockValidateError);
-      expect(mockOnError).toHaveBeenCalledTimes(1);
+      expect(mockOnRequestInvalid[0]).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error: mockValidateError,
+          context: expect.objectContaining({
+            config: expect.any(Object),
+            bigsby: expect.any(BigsbyInstance),
+          }),
+        })
+      );
+      expect(mockOnRequestInvalid[0]).toHaveBeenCalledTimes(1);
+    });
+
+    describe("When a onRequestInvalid hook takes over the response by returning an ApiResponse", () => {
+      it("Should return the ApiResponse", async () => {
+        const apiResponse = {
+          statusCode: 500,
+          body: "onRequestInvalid",
+        };
+
+        mockOnRequestInvalid[0].mockResolvedValueOnce(apiResponse);
+
+        const response = await handler(mockEvent, mockContext, () => {});
+
+        expect(response).toEqual(expect.objectContaining(apiResponse));
+      });
     });
   });
 
@@ -279,10 +445,31 @@ describe("Lifecycle tests", () => {
     it("Should call the onResponseInvalid and onError lifecycle hook", async () => {
       await handler(mockEvent, mockContext, () => {});
 
-      expect(mockOnResponseInvalid).toHaveBeenCalledWith(mockValidateError);
-      expect(mockOnResponseInvalid).toHaveBeenCalledTimes(1);
-      expect(mockOnError).toHaveBeenCalledWith(mockValidateError);
-      expect(mockOnError).toHaveBeenCalledTimes(1);
+      expect(mockOnResponseInvalid[0]).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error: mockValidateError,
+          context: expect.objectContaining({
+            config: expect.any(Object),
+            bigsby: expect.any(BigsbyInstance),
+          }),
+        })
+      );
+      expect(mockOnResponseInvalid[0]).toHaveBeenCalledTimes(1);
+    });
+
+    describe("When a onResponseInvalid hook takes over the response by returning an ApiResponse", () => {
+      it("Should return the ApiResponse", async () => {
+        const apiResponse = {
+          statusCode: 500,
+          body: "onResponseInvalid",
+        };
+
+        mockOnResponseInvalid[0].mockResolvedValueOnce(apiResponse);
+
+        const response = await handler(mockEvent, mockContext, () => {});
+
+        expect(response).toEqual(expect.objectContaining(apiResponse));
+      });
     });
   });
 });

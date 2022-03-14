@@ -6,7 +6,7 @@ import {
 import { constants } from "http2";
 import Joi from "joi";
 
-import { createHandler } from "../../src/api";
+import { Bigsby } from "../../src/bigsby/main";
 import { testAwsData } from "../__data__/test-aws-data";
 import { ValidationHandler } from "../__utils__/handlers";
 
@@ -23,6 +23,11 @@ const {
 describe("Validation tests", () => {
   let mockEvent: APIGatewayProxyEvent;
   let mockContext: Context;
+  let bigsby: Bigsby;
+
+  beforeAll(() => {
+    bigsby = new Bigsby();
+  });
 
   beforeEach(() => {
     mockEvent = eventV1();
@@ -33,7 +38,7 @@ describe("Validation tests", () => {
     let handler: HandlerFunction;
 
     beforeAll(() => {
-      handler = createHandler(ValidationHandler);
+      handler = bigsby.createApiHandler(ValidationHandler);
     });
 
     describe("When RequestSchema annotated on handler class", () => {
@@ -123,22 +128,20 @@ describe("Validation tests", () => {
     let handler: HandlerFunction;
 
     beforeAll(() => {
-      handler = createHandler(ValidationHandler, {
-        api: {
-          request: {
-            schema: {
-              body: Joi.string().required().options({ allowUnknown: true }),
-            },
+      handler = bigsby.createApiHandler(ValidationHandler, {
+        request: {
+          schema: {
+            body: Joi.string().required().options({ allowUnknown: true }),
           },
-          response: {
-            schema: {
-              [HTTP_STATUS_OK]: Joi.object({
-                body: Joi.string().allow("configSchema").required(),
-              }).options({ allowUnknown: true }),
-              [HTTP_STATUS_BAD_REQUEST]: Joi.object({
-                body: Joi.string().allow("badRequest").required(),
-              }).options({ allowUnknown: true }),
-            },
+        },
+        response: {
+          schema: {
+            [HTTP_STATUS_OK]: Joi.object({
+              body: Joi.string().allow("configSchema").required(),
+            }).options({ allowUnknown: true }),
+            [HTTP_STATUS_BAD_REQUEST]: Joi.object({
+              body: Joi.string().allow("badRequest").required(),
+            }).options({ allowUnknown: true }),
           },
         },
       });

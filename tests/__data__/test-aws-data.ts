@@ -43,7 +43,9 @@ function eventV1(): APIGatewayProxyEvent {
 }
 
 function contextV1(): Context {
-  return {} as Context;
+  return {
+    awsRequestId: "765eb2c2-5cdb-4363-82b4-89b292b89ff6",
+  } as Context;
 }
 
 export const testAwsData = {

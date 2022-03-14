@@ -1,0 +1,181 @@
+# Dependency Injection
+
+Bigsby uses [ts-injection](https://github.com/burketyler/ts-injection) under the hood to provide an
+easy to use, intuitive and clean dependency injection interface. The main building blocks of DI in a
+Bigsby app are the `InjectionContainer` and `Injectable` classes.
+
+## InjectionContainer
+
+An `InjectionContainer` is an encapsulated DI environment where Injectables can be stored and retrieved.
+Each Bigsby instance is created with its own InjectionContainer and will have its own instances of
+Injectable classes and objects.
+
+<div style={{ display: "flex", justifyContent: "center" }}>
+  <a
+    href={"/bigsby/img/di-container-diagram.png"}
+    target={"_blank"}
+    style={{ width: "50%" }}
+  >
+    <img
+      src={"/bigsby/img/di-container-diagram.png"}
+      alt={"Dependency Injection Containers"}
+    />
+  </a>
+</div>
+
+## Injectable
+
+The [@Injectable](https://burketyler.github.io/ts-injection/docs/usage#defining-an-injectable)
+decorator lets the framework know that you intend for the class to be handled by the injection container.
+Common use cases for injectable classes are re-usable components and service providers. Consider a
+simplified version of handler class we created in the previous section [getting started](./getting-started).
+
+```typescript
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  constructor(private readonly service: ArnyService) {}
+
+  public async invoke(): Promise<string> {
+    return this.service.getQuote();
+  }
+}
+```
+
+The class relies on a service provider to retrieve a famous quote by Arnold Schwarzenegger. We can enable
+automatic injection of the `ArnyService` class by defining it as an `@Injectable` and listing it as a
+constructor argument on the `ArnyQuotesHandler`.
+
+```typescript
+@Injectable()
+class ArnyService {
+  public getQuote(): string {
+    const quotes = [
+      "Hasta la vista, baby!",
+      "If it bleeds, we can kill it.",
+      "Come with me if you want to live.",
+    ];
+
+    return getRandomItem(quotes);
+  }
+}
+```
+
+## Injectable objects
+
+You may come across use cases where manually registering objects or classes in the DI is
+required. In this scenario you can access the DI container via the Bigsby instance and call the `register`
+method. An `InjectableItem` is returned including a unique token that can be used to reference the
+injectable in the future.
+
+```typescript
+const di = bigsby.getInjectionContainer();
+
+const config: Config = {
+  printResponse: true,
+};
+
+const { token: configToken } = di.register(config).successOrThrow();
+```
+
+:::warning
+
+Make sure all of your injectable registrations are completed _before_ calling `createApiHandler`,
+otherwise they may not be available to your handler functions.
+
+:::
+
+## Types of injection
+
+The above example is a specific type of constructor injection that doesn't rely on any decorators.
+In addition to this type of injection, you can use the `@Autowire` decorator to perform different
+injection types.
+
+### 🌾 Field injection
+
+If we preferred, the `ArnyService` class could instead be injected into the `ArnyQuotesHandler` class,
+using field injection. The config object we manually injected can also be injected using its injection
+token.
+
+```typescript
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  @Autowire(ArnyService)
+  private readonly service!: ArnyService;
+
+  @Autowire(configToken)
+  private readonly config!: Config;
+
+  constructor() {
+    // I don't have access to my injectables here
+  }
+
+  public async invoke(): Promise<string> {
+    const response = this.service.getQuote();
+
+    if (this.config.printResponse) {
+      console.log(response);
+    }
+
+    return response;
+  }
+}
+```
+
+### 🔨 Constructor injection
+
+The same can be achieved via constructor injection, which is the only injection type which
+allows access to the injectables inside the class constructor.
+
+```typescript
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  constructor(
+    @Autowire(configToken)
+    private readonly config: Config,
+    @Autowire(ArnyService) // <- Not mandatory (see below)
+    private readonly service: ArnyService
+  ) {
+    // I have access to my injectables here
+  }
+
+  public async invoke(): Promise<string> {
+    const response = this.service.getQuote();
+
+    if (this.config.printResponse) {
+      console.log(response);
+    }
+
+    return response;
+  }
+}
+```
+
+:::tip
+
+The `@Autowire` decorator isn't strictly required for classes that have been registered with
+the `@Injectable` decorator. The injection framework is smart enough to infer what should be injected by
+adding the class as a parameter (as seen in the [first example](#injectable)).
+
+:::
+
+## Environment Variables
+
+You can inject environment variables into class members using the `@Env` annotation.
+
+```typescript
+process.env.MY_STR = "test";
+
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  @Env("MY_STR")
+  private myString: string;
+
+  constructor() {
+    console.log(this.myString);
+    // "test"
+  }
+}
+```
+
+For a more in-depth look at all the DI features available in ts-injection, head over and check out the
+official [documentation](https://burketyler.github.io/ts-injection/).

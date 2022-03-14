@@ -1,0 +1,145 @@
+# Event Parsing
+
+Bigsby provides a comprehensive set of decorators to map API Gateway events into the parameters your handler
+needs, resulting in concise, clean and easy to read code. Define the inputs that your handler requires, and let
+Bigsby inject the value into arguments of your handler.
+
+## Body
+
+```typescript
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  public async invoke(@Body() request: GetQuoteRequest): Promise<string> {
+    return getQuote(request);
+  }
+}
+```
+
+## Query strings
+
+By default, Bigsby will match the argument name to the query string name. You can change this behaviour by specifying
+the query string name when calling `@Query`.
+
+```typescript
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  public async invoke(
+    @Query() movie: string,
+    @Query("movie") myQueryString
+  ): Promise<string> {
+    // movie and myQueryString will both have the same value
+    return getQuote(movie);
+  }
+}
+```
+
+## Param parameters
+
+By default, Bigsby will match the argument name to the path parameter name. You can change this behaviour by specifying
+the path parameter name when calling `@Param`.
+
+```typescript
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  public async invoke(
+    @Param() movie: string,
+    @Param("movie") myPathParam
+  ): Promise<string> {
+    // movie and myPathParam will both have the same value
+    return getQuote(movie);
+  }
+}
+```
+
+## Headers
+
+By default, Bigsby will match the argument name to the header name. You can change this behaviour by specifying
+the header name when calling `@Header`.
+
+```typescript
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  public async invoke(
+    @Header() movie: string,
+    @Header("movie") myHeader
+  ): Promise<string> {
+    // movie and myHeader will both have the same value
+    return getQuote(movie);
+  }
+}
+```
+
+## Request context
+
+You can access the Bigsby `RequestContext` using the `@Context` decorator. This is a disposable object which
+contains things that may be useful in some scenarios such as the original event payload, the handler's
+configuration and the Bigsby instance the handler belongs to.
+
+The request context can also be extended to suit your needs, you may use a plugin or lifecycle hook that adds
+metadata or information to the request for consumption during execution.
+
+```typescript
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  public async invoke(@Context() context: RequestContext): Promise<string> {
+    if (context.config.auth === "MyAuthScheme") {
+      return signResponse(getQuote());
+    } else {
+      return getQuote();
+    }
+  }
+}
+```
+
+## Type inference & coercion
+
+Bigsby uses reflection to infer the type of the arguments you define and will attempt to coerce the value
+to the required type by default. This behaviour can be turned off by settings the handler config value
+`request.enableTypeCoercion` to `false`.
+
+### Supported types
+
+- `object`
+- `string`
+- `number`
+- `boolean`
+
+In the example below the body has been declared as an `object` - Bigsby will JSON parse the API Gateway event's body
+field and inject it into your handler.
+
+```typescript
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  public async invoke(@Body() request: { movie: string }): Promise<string> {
+    console.log(typeof request, "I'm an object!");
+    return getQuote(request.movie);
+  }
+}
+```
+
+If we're to add a header parsing rule and declare it as a `number`, Bigsby will convert the value into a number and
+inject it into your handler.
+
+```typescript
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  public async invoke(
+    @Body() request: GetQuoteRequest,
+    @Header() limit: number
+  ): Promise<string> {
+    console.log(typeof limit, "I'm a number!");
+
+    return getQuote(movie, limit);
+  }
+}
+```
+
+Type inference and coercion can be applied to any of the event parsing rules listed above.
+
+:::caution
+
+If type coercion fails, a warning will be logged, and the argument value will be `undefined`. The Handler
+will still execute though, so it's up to you to add the necessary [validation](./validation) or include null
+checks to ensure your handler can deal with invalid or unexpected inputs.
+
+:::

@@ -1,0 +1,104 @@
+# Versioning
+
+Bigsby supports header and path based versioning out of the box. Define a `method`, `key`, and
+`defaultVersion` in your API [configuration](./configuration), then provide a list of handler
+classes when creating your handler function in order to have Bigsby automatically route
+requests to the correct function.
+
+```typescript
+const bigsby = new Bigsby({
+  api: {
+    versioning: {
+      method: VersioningMethod.HEADER,
+      key: "X-Api-Version",
+      defaultVersion: "v1",
+    },
+  },
+});
+
+@Api()
+@Version("v1")
+class ArnyQuotesHandlerV1 implements ApiHandler {
+  public async invoke(): Promise<string> {
+    return getQuote();
+  }
+}
+
+@Api()
+@Version("v2")
+class ArnyQuotesHandlerV2 implements ApiHandler {
+  public async invoke(): Promise<string> {
+    return getQuoteTheNewWay();
+  }
+}
+
+export default bigsby.createApiHandler([
+  ArnyQuotesHandlerV1,
+  ArnyQuotesHandlerV2,
+]);
+```
+
+:::note
+
+You don't have to define versioning config at the Bigsby instance level, it's perfectly
+acceptable to define it directly in your `createApiHandler` config instead if your use
+case requires it to be scoped only to the function.
+
+:::
+
+## Path vs Header
+
+The versioning system requires a defined `VersioningMethod`.
+
+When header based versioning is chosen Bigsby will parse the incoming event's `headers`
+property searching for a header with the same name as the `key` provided. When choosing
+path based versioning, it will instead search the incoming `pathParameters` property.
+
+If the version header is missing in either scenario, the `defaultVersion` will be used
+instead.
+
+## Version -> Handler class map
+
+It's also possible to define the mapping between handler classes and versions via a mapping
+object instead of using the `@Version` decorator. The above example would instead be written
+like this.
+
+```typescript
+const bigsby = new Bigsby({
+  api: {
+    versioning: {
+      method: VersioningMethod.HEADER,
+      key: "X-Api-Version",
+      defaultVersion: "v1",
+    },
+  },
+});
+
+@Api()
+class ArnyQuotesHandlerV1 implements ApiHandler {
+  public async invoke(): Promise<string> {
+    return getQuote();
+  }
+}
+
+@Api()
+class ArnyQuotesHandlerV2 implements ApiHandler {
+  public async invoke(): Promise<string> {
+    return getQuoteTheNewWay();
+  }
+}
+
+export default bigsby.createApiHandler({
+  v1: ArnyQuotesHandlerV1,
+  v2: ArnyQuotesHandlerV2,
+});
+```
+
+## Invalid version
+
+In the event that a version has been provided, but it doesn't match any of the mapped
+handler classes, Bigsby will return a `400 Bad Request` response.
+
+## Aliases
+
+- `@Version` can be shortened to `@V`.

@@ -4,7 +4,7 @@ import {
   Handler as HandlerFunction,
 } from "aws-lambda";
 
-import { createHandler } from "../../src/api";
+import { Bigsby } from "../../src/bigsby/main";
 import { testAwsData } from "../__data__/test-aws-data";
 import { SuccessHandler } from "../__utils__/handlers";
 
@@ -13,13 +13,19 @@ const {
 } = testAwsData;
 
 describe("Mapping tests", () => {
+  let bigsby: Bigsby;
+
+  beforeAll(() => {
+    bigsby = new Bigsby();
+  });
+
   describe("@Body mapping tests", () => {
     let handler: HandlerFunction;
     let mockEvent: APIGatewayProxyEvent;
     let mockContext: Context;
 
     beforeAll(() => {
-      handler = createHandler(SuccessHandler);
+      handler = bigsby.createApiHandler(SuccessHandler);
     });
 
     beforeEach(() => {
@@ -46,7 +52,7 @@ describe("Mapping tests", () => {
     let mockContext: Context;
 
     beforeAll(() => {
-      handler = createHandler(SuccessHandler);
+      handler = bigsby.createApiHandler(SuccessHandler);
     });
 
     beforeEach(() => {
@@ -84,7 +90,7 @@ describe("Mapping tests", () => {
     let mockContext: Context;
 
     beforeAll(() => {
-      handler = createHandler(SuccessHandler);
+      handler = bigsby.createApiHandler(SuccessHandler);
     });
 
     beforeEach(() => {
@@ -132,7 +138,7 @@ describe("Mapping tests", () => {
     let mockContext: Context;
 
     beforeAll(() => {
-      handler = createHandler(SuccessHandler);
+      handler = bigsby.createApiHandler(SuccessHandler);
     });
 
     beforeEach(() => {

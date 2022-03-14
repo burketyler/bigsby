@@ -1,0 +1,115 @@
+# Authentication
+
+Authentication with Bigsby revolves around the concept of `authenticators` and `AuthSchemas`.
+
+## Authenticators
+
+An authenticator is an asynchronous method provided to Bigsby that's used to determine if a
+request is authenticated and/or authorised to perform the requested action.
+
+```typescript
+async function apiKeyAuthenticator(ctx: RequestContext): Promise<void> {
+  const apiKey = ctx.event.headers["X-Api-Key"];
+
+  if (!apiKey) {
+    // Results in 401
+    throw new UnauthorizedError();
+  } else if (!isValidApiKey(apiKey)) {
+    // Results in 403
+    throw new ForbiddenError();
+  } else if (!isUserEnabled(apiKey)) {
+    // 401 by default
+    // Catch me in onAuthFail to return custom response
+    throw new CustomError();
+  } else {
+    // For use later in lifecycle
+    ctx.apiKey = apiKey;
+  }
+}
+```
+
+### Authorizing a request
+
+If an authenticator function resolves, it's determined that the request is authorized
+and that the caller has sufficient privileges to perform the action.
+
+### Denying a request
+
+If an authenticator function rejects, it's determined that the request is unauthorized or that the
+caller doesn't have sufficient privileges to perform the action. You can define which scenario
+is applicable by throwing the corresponding error type:
+
+- `UnauthorizedError` will cause Bigsby to return a `401 Unauthorized` response.
+- `ForbiddenErrror` will cause Bigsby to return a `403 Forbidden` response.
+
+### Custom Errors
+
+Any value can be thrown from an authenticator. By default, Bigsby will return a `401` if
+the error type isn't recognized. This behaviour can be overridden by listening to the `onAuthFail`
+[lifecycle](./lifecycle) hook and returning a custom `ApiResponse`.
+
+### Session Information
+
+Authenticators receive the Bigsby `RequestContext`, giving full access to the values required
+to verify a request and the ability to store session metadata, user information, etc.
+for consumption later in the request's [lifecycle](./lifecycle).
+
+## Auth Scheme
+
+Auth schemes are named authenticators that can be registered at the Bigsby instance level
+via the `registerAuthScheme` method. The schemes can be consumed by any handler created with the
+instance.
+
+Provide the scheme name to the `@Authentication` decorator to attach it to the handler class.
+
+```typescript
+const bigsby = new Bigsby();
+
+bigsby.registerAuthScheme({
+  name: "ApiKeyAuth",
+  authenticator: async ({ event }): Promise<void> => {
+    if (!event.headers["X-Api-Key"]) {
+      throw new UnauthorizedError();
+    }
+  },
+});
+
+@Api()
+@Authentication("ApiKeyAuth")
+class ArnyQuotesHandler implements ApiHandler {
+  public async invoke(): Promise<string> {
+    return getQuote();
+  }
+}
+
+export default bigsby.createApiHandler(ArnyQuotesHandler);
+```
+
+## Inline Authenticator
+
+An authenticator can be attached directly to a handler class using the `@Authentication` decorator.
+Simply pass your authenticator method as an argument without needing to onRegister it as a scheme first.
+
+```typescript
+const bigsby = new Bigsby();
+
+async function apiKeyAuthenticator({ event }): Promise<void> {
+  if (!event.headers["X-Api-Key"]) {
+    throw new UnauthorizedError();
+  }
+}
+
+@Api()
+@Authentication(apiKeyAuthenticator)
+class ArnyQuotesHandler implements ApiHandler {
+  public async invoke(): Promise<string> {
+    return getQuote();
+  }
+}
+
+export default bigsby.createApiHandler(ArnyQuotesHandler);
+```
+
+## Aliases
+
+- `@Authentication` can be shortened to `@Auth`.

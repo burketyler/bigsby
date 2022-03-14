@@ -1,115 +1,82 @@
-import { fail, success, Throwable } from "ts-injection";
+import { TRACE_ID_HEADER } from "../constants";
+import { BigsbyError, RequestContext, ApiResponse } from "../types";
 
-import { HttpResponse } from "../api";
-import { BigsbyConfig } from "../config";
-import { useLogger } from "../logger";
-import {
-  ResponseParseError,
-  TypeCoercionError,
-  ContentType,
-  BigsbyError,
-} from "../types";
-import { tryStringify } from "../utils";
+import { CONTENT_TYPE_HEADER } from "./constants";
 
-const { logger } = useLogger();
+export function addTraceIdHeader(
+  response: ApiResponse,
+  context: RequestContext
+): ApiResponse {
+  const newHeaders = { ...response.headers };
 
-export function transformResponse(
-  response: HttpResponse,
-  { api: config }: BigsbyConfig
-): Throwable<TypeCoercionError, HttpResponse> {
-  let enrichedResponse: HttpResponse = { ...response };
+  newHeaders[TRACE_ID_HEADER] = context.apiGwContext.awsRequestId;
 
-  logger.info("Transforming handler response.");
-
-  if (config.response.headers) {
-    enrichedResponse = addResponseHeaders(response, config.response.headers);
-  }
-
-  if (config.response.enableInferContentType) {
-    enrichedResponse = addInferredContentTypeBody(response);
-  }
-
-  const stringifyResult = tryStringify(enrichedResponse.body);
-
-  if (stringifyResult.isError()) {
-    logger.error(stringifyResult.value(), "Failed to stringify response.");
-    return fail(new ResponseParseError());
-  }
-
-  return success({ ...enrichedResponse, body: stringifyResult.value() });
+  return { ...response, headers: newHeaders };
 }
 
-function addResponseHeaders(
-  response: HttpResponse,
-  headersToAdd: { [headerName: string]: string }
-): HttpResponse {
-  logger.debug({ headers: headersToAdd }, "Adding default headers.");
+export function addConfiguredDefaultHeaders(
+  response: ApiResponse,
+  context: RequestContext
+): ApiResponse {
+  const { logger } = context.bigsby;
+  const newHeaders = { ...response.headers };
 
-  return {
-    ...response,
-    headers: Object.entries(headersToAdd).reduce(
-      (
-        newHeaders: NonNullable<HttpResponse["headers"]>,
-        [headerName, headerValue]
-      ) => ({
-        ...newHeaders,
-        [headerName]: newHeaders[headerName] ?? headerValue,
-      }),
-      response.headers ?? {}
-    ),
-  };
+  logger.debug({ headers: response.headers }, "Adding default headers.");
+
+  Object.entries(response.headers ?? {}).reduce(
+    (
+      headers: NonNullable<ApiResponse["headers"]>,
+      [headerName, headerValue]
+    ) => ({
+      ...newHeaders,
+      [headerName]: headers[headerName] ?? headerValue,
+    }),
+    newHeaders ?? {}
+  );
+
+  return { ...response, headers: newHeaders };
 }
 
-function addInferredContentTypeBody(response: HttpResponse): HttpResponse {
-  logger.info("Inferring content type.");
+export function addContentTypeHeader(
+  response: ApiResponse,
+  context: RequestContext
+): ApiResponse {
+  const { logger } = context.bigsby;
+  const newHeaders = { ...response.headers };
 
-  if (response.headers?.["content-type"]) {
+  logger.debug("Inferring content type.");
+
+  if (newHeaders[CONTENT_TYPE_HEADER.toLowerCase()]) {
     logger.debug("Content-Type header already provided in response, skipping.");
     return response;
   }
 
   const contentType = inferContentType(response.body);
-  logger.debug({ contentType }, "Using Content-Type.");
+  logger.debug(`Inferred Content-Type: ${contentType}.`);
 
-  return {
-    ...response,
-    headers: addContentTypeToHeaders(contentType, response.headers ?? {}),
-  };
+  if (contentType) {
+    newHeaders[CONTENT_TYPE_HEADER] = contentType;
+  }
+
+  return { ...response, headers: newHeaders };
 }
 
-function inferContentType(body: unknown): ContentType {
+function inferContentType(body: unknown): string | undefined {
   switch (typeof body) {
     case "bigint":
     case "number":
     case "string":
-      return ContentType.TEXT_PLAIN;
+      return "text/plain";
     case "boolean":
     case "object":
-      return ContentType.APPLICATION_JSON;
+      return "application/json";
     case "undefined":
-      return ContentType.NONE;
+      return undefined;
     case "symbol":
     case "function":
     default:
       throw new BigsbyError(
-        `Invalid body type ${typeof body}, cannot infer content type.`
+        `Type of response body is invalid: ${typeof body}. Cannot infer content type.`
       );
-  }
-}
-
-function addContentTypeToHeaders(
-  contentType: ContentType,
-  headers: HttpResponse["headers"]
-): HttpResponse["headers"] {
-  const headerName = "Content-Type";
-
-  switch (contentType) {
-    case ContentType.APPLICATION_JSON:
-      return { ...headers, [headerName]: "application/json" };
-    case ContentType.TEXT_PLAIN:
-      return { ...headers, [headerName]: "text/plain" };
-    case ContentType.NONE:
-    default:
-      return headers;
   }
 }

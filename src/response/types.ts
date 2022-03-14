@@ -1,3 +1,3 @@
-import { HttpResponse } from "../api";
+import { ApiResponse } from "../types";
 
-export type ResponseValues = Omit<HttpResponse, "statusCode">;
+export type ResponseValues = Omit<ApiResponse, "statusCode">;

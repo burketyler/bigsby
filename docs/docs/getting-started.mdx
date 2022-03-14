@@ -1,0 +1,97 @@
+---
+id: getting-started
+---
+
+# Getting started
+
+This getting started guide will show you all you need to know in order to create a simple
+API Gateway triggered AWS Lambda function using the Bigsby library.
+
+### Pre-requisites
+
+If you haven't already, please complete the steps in [setup](../setup).
+
+## Step 1: Create a Bigsby instance
+
+The main purpose of the Bigsby instance is to act as a factory for handler functions.
+It contains configuration that will be applied to each handler created by the instance,
+and its own isolated and unique dependency
+[injection container](https://burketyler.github.io/ts-injection/usage#creating-an-injection-container).
+
+Defining an instance is as simple as creating a new Bigsby class. If your app consists of
+functions that require vastly different configuration, e.g. public vs private APIs, you can
+create as many Bigsby instances as required to cover each grouping of functions.
+
+```typescript
+const bigsby = new Bigsby();
+```
+
+It's common that you will need to add configuration applicable to each handler in your
+application, this can be defined as a constructor argument to the instance, or at any point
+after initialization. See [configuration](/usage/configuration) for more information.
+
+```typescript
+const bigsby = new Bigsby({
+  api: {
+    request: {
+      auth: authenticateRequest,
+    },
+    response: {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+      },
+    },
+  },
+});
+```
+
+## Step 2: Define a handler class
+
+An `ApiHandler` is used to handle events triggered via API Gateway v1 (rest) or v2 (http).
+The `@Api` decorator indicates to Bigsby that this class should be treated as an ApiHandler.
+The class must implement the ApiHandler interface.
+
+```typescript
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  @Autowire(ArnyService)
+  private service!: ArnyService;
+
+  public async invoke(@Body() request: GetQuoteRequest): Promise<string> {
+    return this.service.getQuote(request.movie);
+  }
+}
+```
+
+The above handler is injecting a service dependency via the `Autowire` decorator
+and parsing a request object from the event payload using the `Body` decorator. You can learn
+more about [dependency injection](/usage/dependency-injection) and [event parsing](/usage/event-parsing)
+in their respective sections.
+
+## Step 3: Create handler function
+
+Using Bigsby, create and export your handler function by specifying the handler class.
+The function will automatically inherit configuration specified at the instance level.
+You can also define configuration that should be scoped to this handler only.
+
+```typescript
+export default bigsby.createApiHandler(ArnyQuotesHandler, {
+  lifecycle: {
+    onError: [sendAlert],
+  },
+});
+```
+
+Export the handler function, reference it in your lambda build chain, and you're ready to rock and roll 🍾
+
+The function returned by `createApiHandler` is the `invoke` method of the specified handler class,
+wrapped with all the bells and whistles of the Bigsby library including:
+
+- 💉 dependency injection
+- 🔎 parsing
+- 👮 validation
+- 🔢 versioning
+- 🔐 authentication
+- 🪝 lifecycle
+
+Keep reading the next pages for a more in-depth explanation of the diverse and powerful features of Bigsby.

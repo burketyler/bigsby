@@ -5,7 +5,8 @@ import {
 } from "aws-lambda";
 import { constants } from "http2";
 
-import { createHandler, VersioningMethod } from "../../src/api";
+import { Bigsby } from "../../src/bigsby/main";
+import { VersioningMethod } from "../../src/types";
 import { testAwsData } from "../__data__/test-aws-data";
 import { Version1Handler, Version2Handler } from "../__utils__/handlers";
 
@@ -18,6 +19,11 @@ const { HTTP_STATUS_OK, HTTP_STATUS_BAD_REQUEST } = constants;
 describe("Versioning tests", () => {
   let mockEvent: APIGatewayProxyEvent;
   let mockContext: Context;
+  let bigsby: Bigsby;
+
+  beforeAll(() => {
+    bigsby = new Bigsby();
+  });
 
   beforeEach(() => {
     mockEvent = eventV1();
@@ -35,23 +41,27 @@ describe("Versioning tests", () => {
 
           beforeAll(() => {
             defaultVersion = "v1";
-            handler = createHandler(
-              applicationType === "ANNOTATED"
-                ? [Version1Handler, Version2Handler]
-                : {
-                    v1: Version1Handler,
-                    v2: Version2Handler,
-                  },
-              {
-                api: {
-                  versioning: {
-                    method,
-                    defaultVersion,
-                    key: "Version",
-                  },
+            const config = {
+              versioning: {
+                method,
+                defaultVersion,
+                key: "Version",
+              },
+            };
+            if (applicationType === "ANNOTATED") {
+              handler = bigsby.createApiHandler(
+                [Version1Handler, Version2Handler],
+                config
+              );
+            } else {
+              handler = bigsby.createApiHandler(
+                {
+                  v1: Version1Handler,
+                  v2: Version2Handler,
                 },
-              }
-            );
+                config
+              );
+            }
           });
 
           it.each(["v1", "v2"])(

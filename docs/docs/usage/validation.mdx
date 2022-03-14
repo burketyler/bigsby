@@ -1,0 +1,159 @@
+# Validation
+
+Leveraging [Joi's](https://joi.dev) powerful schema description language, Bigsby makes it easy
+to define complex request and response schemas. Configuring schemas can be done via decorators
+or in your handler's config.
+
+## Request
+
+Request validation can be applied to the `body`, `headers`, `queryStrings` or `pathParameters`
+of an incoming request. The `RequestValidationSchema` object consists of Joi schemas that
+can be applied to each aspect of the event payload.
+
+When request validation fails, the `onRequestInvalid` hook is called and a default `400 Bad Request`
+response is returned by the handler. You can customize this behaviour by returning a different `ApiResponse`
+from `onRequestInvalid`.
+
+### Body
+
+```typescript
+const requestSchema: RequestValidationSchema = {
+  body: Joi.object({
+    movie: Joi.string().required(),
+  }),
+};
+
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  @RequestSchema(requestSchema)
+  public async invoke(@Body() request: GetQuoteRequest): Promise<string> {
+    return getQuote(request.movie);
+  }
+}
+```
+
+:::info
+
+If the `Content-Type` of the incoming request is `application/json`, then body validation
+is applied to the parsed javascript object, otherwise it will be applied to the raw string
+value received.
+
+:::
+
+### Headers
+
+```typescript
+const requestSchema: RequestValidationSchema = {
+  headers: Joi.object({
+    "x-api-version": Joi.string().required(),
+  }),
+};
+
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  @RequestSchema(requestSchema)
+  public async invoke(): Promise<string> {
+    return getQuote();
+  }
+}
+```
+
+:::tip
+
+Request header names will always be lowercase.
+
+:::
+
+### Path Parameters
+
+```typescript
+const requestSchema: RequestValidationSchema = {
+  pathParameters: Joi.object({
+    movieId: Joi.string().uuid().required(),
+  }),
+};
+
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  @RequestSchema(requestSchema)
+  public async invoke(@Path movieId: string): Promise<string> {
+    return getQuote(movieId);
+  }
+}
+```
+
+### Query Strings
+
+```typescript
+const requestSchema: RequestValidationSchema = {
+  queryStringParameters: Joi.object({
+    movieId: Joi.string().uuid().required(),
+  }),
+};
+
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  @RequestSchema(requestSchema)
+  public async invoke(@Query movieId: string): Promise<string> {
+    return getQuote(movieId);
+  }
+}
+```
+
+## Response
+
+Response validation is applied to the `body` of a handler's `ApiResponse`. It's possible to
+define a different response schema for each HTTP status code that a handler can return.
+
+When response validation fails, the `onResponseInvalid` hook is called and a default `500 Internal Error`
+response is returned by the handler. You can customize this behaviour by returning a different `ApiResponse`
+from `onResponseInvalid`.
+
+```typescript
+const okResponseSchema = Joi.string().required();
+const notFoundResponseSchema = Joi.string().valid("NOT_FOUND").required();
+
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  @ResponseSchema(200, okResponseSchema)
+  @ResponseSchema(404, notFoundResponseSchema)
+  public async invoke(@Path movie: string): Promise<ApiResponse> {
+    const quote = getQuote(movie);
+
+    if (quote) {
+      return new ResponseBuilder(quote).statusCode(200).build();
+    } else {
+      return new ResponseBuilder("NOT_FOUND").statusCode(404).build();
+    }
+  }
+}
+```
+
+The `@ResponseSchema` decorator can also accept a single `ResponseValidationSchemaMap`
+which is particularly helpful for handlers that can respond with several status codes.
+
+```typescript
+const responseSchema = {
+  200: Joi.string().required(),
+  404: Joi.string().valid("NOT_FOUND").required(),
+};
+
+@Api()
+class ArnyQuotesHandler implements ApiHandler {
+  @ResponseSchema(responseSchema)
+  public async invoke(@Path movie: string): Promise<ApiResponse> {
+    const quote = getQuote(movie);
+
+    if (quote) {
+      return new ResponseBuilder(quote).statusCode(200).build();
+    } else {
+      return new ResponseBuilder("NOT_FOUND").statusCode(404).build();
+    }
+  }
+}
+```
+
+## Aliases
+
+- `@RequestSchema` can be shortened to `@ReqSchema`.
+- `@ResponseSchema` can be shortened to `@ResSchema`.

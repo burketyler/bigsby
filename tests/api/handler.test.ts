@@ -5,10 +5,10 @@ import {
 } from "aws-lambda";
 import { constants } from "http2";
 
-import { createHandler } from "../../src/api";
+import { Bigsby } from "../../src/bigsby/main";
 import * as Response from "../../src/response";
 import { testAwsData } from "../__data__/test-aws-data";
-import { SuccessHandler } from "../__utils__/handlers";
+import { DirectValueHandler, SuccessHandler } from "../__utils__/handlers";
 
 const {
   HTTP_STATUS_INTERNAL_SERVER_ERROR,
@@ -28,15 +28,15 @@ describe("Handler tests", () => {
   let unhandledSpy: jest.SpyInstance;
   let mockAuth: jest.Mock;
   let spyTransformResponse: jest.SpyInstance;
+  let bigsby: Bigsby;
 
   beforeAll(() => {
+    bigsby = new Bigsby();
     unhandledSpy = jest.spyOn(SuccessHandler.prototype, "spyOnMeUnhandled");
     mockAuth = jest.fn();
-    handler = createHandler(SuccessHandler, {
-      api: {
-        request: {
-          auth: mockAuth,
-        },
+    handler = bigsby.createApiHandler(SuccessHandler, {
+      request: {
+        auth: mockAuth,
       },
     });
     spyTransformResponse = jest.spyOn(Response, "transformResponse");
@@ -52,14 +52,32 @@ describe("Handler tests", () => {
   });
 
   describe("When handler invocation is successful", () => {
-    it("Should return the HttpResponse returned by the invoke method", async () => {
-      const response = await handler(mockEvent, mockContext, () => {});
+    describe("When handler returns an ApiResponse", () => {
+      it("Should return the ApiResponse returned by the invoke method", async () => {
+        const response = await handler(mockEvent, mockContext, () => {});
 
-      expect(response).toEqual(
-        expect.objectContaining({
-          statusCode: HTTP_STATUS_OK,
-        })
-      );
+        expect(response).toEqual(
+          expect.objectContaining({
+            statusCode: HTTP_STATUS_OK,
+          })
+        );
+      });
+    });
+
+    describe("When handler returns a response value", () => {
+      it("Should return response value returned by the invoke method", async () => {
+        const response = await bigsby.createApiHandler(DirectValueHandler)(
+          mockEvent,
+          mockContext
+        );
+
+        expect(response).toEqual(
+          expect.objectContaining({
+            statusCode: HTTP_STATUS_OK,
+            body: "imNotAnApiResponse",
+          })
+        );
+      });
     });
   });
 

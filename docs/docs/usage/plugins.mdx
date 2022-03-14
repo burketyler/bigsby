@@ -1,0 +1,39 @@
+# Plugins
+
+Plugins are a way to package and share code used to bootstrap a Bigsby instance. A plugin is
+registered using the `registerPlugin` method, which accepts a `BigsbyPluginRegistration`
+object.
+
+A plugin is composed of a `name` and an `onRegister` method. The `onRegister` method
+accepts two arguments: the Bigsby instance it's being registered to, as well as any
+options that were declared as part of the registration.
+
+```typescript
+const bigsby = new Bigsby();
+
+async function addJwtAuthScheme(
+  instance: BigsbyInstance,
+  options: Record<string, unknown>
+): Promise<void> {
+  instance.registerAuthMethod({
+    name: "jwt",
+    authenticator: async ({ event }) => {
+      return verifyJwt(event.headers.authorization, options.secret);
+    },
+  });
+}
+
+const myPlugin: BigsbyPlugin = {
+  name: "my-plugin",
+  onRegister: addJwtAuthScheme,
+};
+
+bigsby.registerPlugin({ plugin: myPlugin, options: { secret: "mySecretKey" } });
+```
+
+:::info
+
+Plugins will execute in the order of their registration when your handler
+initializes.
+
+:::

@@ -1,6 +1,1 @@
-export { Version } from "./main";
-export {
-  getApiVersion,
-  getHandlerClassForVersion,
-  isHandlerConstructor,
-} from "./utils";
+export { V, Version, getHandlerClassForVersion } from "./main";

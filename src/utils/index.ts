@@ -2,8 +2,10 @@ export {
   getFunctionParameterNames,
   getInferredTypesForClassMethod,
   isObject,
+  isApiResponse,
 } from "./reflection";
-export { onInit } from "./instance";
+export { invokeHookChain, resolveHookChain } from "./hooks";
+export { freezeDeep } from "./object";
 export {
   tryParseObject,
   tryParseNumber,

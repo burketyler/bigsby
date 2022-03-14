@@ -1,6 +1,6 @@
 import { PRIMITIVE_TYPES, success, Throwable } from "ts-injection";
 
-import { BigsbyError, InferredType } from "../types";
+import { ApiResponse, BigsbyError, InferredType } from "../types";
 
 /** *
  * Infer a type based on the primitive constructor reference of the class member
@@ -68,4 +68,8 @@ export function getFunctionParameterNames(fn: unknown): string[] {
 
 export function isObject(value: unknown): boolean {
   return typeof value === "object" && value !== null;
+}
+
+export function isApiResponse(response: ApiResponse): response is ApiResponse {
+  return !!response?.statusCode;
 }

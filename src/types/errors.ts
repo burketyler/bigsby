@@ -20,15 +20,6 @@ export class RequestParseError extends Error {
   }
 }
 
-export class ApiVersionError extends Error {
-  constructor(message?: string) {
-    super(message);
-    this.name = "ApiVersionError";
-    Object.setPrototypeOf(this, ApiVersionError.prototype);
-    Error.captureStackTrace(this, this.constructor);
-  }
-}
-
 export class ResponseParseError extends Error {
   constructor(message?: string) {
     super(message);
@@ -61,6 +52,24 @@ export class AuthenticationError extends Error {
     super(message);
     this.name = "AuthenticationError";
     Object.setPrototypeOf(this, AuthenticationError.prototype);
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class UnauthorizedError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "UnauthorizedError";
+    Object.setPrototypeOf(this, UnauthorizedError.prototype);
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
+export class ForbiddenError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "ForbiddenError";
+    Object.setPrototypeOf(this, ForbiddenError.prototype);
     Error.captureStackTrace(this, this.constructor);
   }
 }

@@ -1,7 +1,7 @@
 {
   "name": "bigsby",
-  "version": "1.2.0",
-  "description": "Typescript based AWS Lambda middleware and annotations, making life easier.",
+  "version": "0.1.0",
+  "description": "Bigsby is the cutest NodeJS Lambda library on the block. Parsing, validation, auth, DI, versioning, hooks and more.",
   "main": ".build/index.js",
   "types": ".build/index.d.ts",
   "author": "burketyler",
@@ -13,14 +13,17 @@
     "access": "public"
   },
   "keywords": [
-    "bigsby",
-    "lambda",
-    "functions",
-    "annotations",
-    "decorate",
-    "typescript",
     "aws",
-    "framework",
+    "bigsby",
+    "lambda functions",
+    "decorators",
+    "typescript",
+    "plugins",
+    "versioning",
+    "parsing",
+    "validation",
+    "dependenci injection",
+    "authentication",
     "middleware"
   ],
   "scripts": {
@@ -39,10 +42,11 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "joi": "17.5.0",
-    "lodash.merge": "4.6.2",
-    "pino": "7.6.2",
-    "ts-injection": "2.0.2",
+    "joi": "17.6.0",
+    "lodash.clonedeep": "4.5.0",
+    "lodash.mergewith": "4.6.2",
+    "pino": "7.8.1",
+    "ts-injection": "3.0.0",
     "tslib": "2.3.1"
   },
   "peerDependencies": {
@@ -54,7 +58,8 @@
     "@semantic-release/git": "10.0.1",
     "@types/aws-lambda": "8.10.89",
     "@types/jest": "27.4.0",
-    "@types/lodash.merge": "4.6.6",
+    "@types/lodash.clonedeep": "4.5.6",
+    "@types/lodash.mergewith": "4.6.6",
     "@typescript-eslint/eslint-plugin": "5.9.0",
     "@typescript-eslint/parser": "5.9.0",
     "aws-sdk": "2.1001.0",

@@ -1,18 +1,30 @@
 {
+  "root": true,
   "env": {
     "node": true,
     "jest": true
   },
-  "ignorePatterns": ["*.md", "node_modules", ".build"],
+  "ignorePatterns": [
+    "*.md",
+    "node_modules",
+    ".build",
+    "docs"
+  ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
-    "project": "./tsconfig.json",
-    "createDefaultProgram": true
+    "project": "./tsconfig.json"
   },
   "settings": {
-    "import/core-modules": ["aws-sdk", "aws-lambda"]
+    "import/core-modules": [
+      "aws-sdk",
+      "aws-lambda"
+    ]
   },
-  "plugins": ["@typescript-eslint", "prettier", "import"],
+  "plugins": [
+    "@typescript-eslint",
+    "prettier",
+    "import"
+  ],
   "extends": [
     "airbnb/base",
     "airbnb-typescript/base",
@@ -26,9 +38,14 @@
     "class-methods-use-this": "off",
     "@typescript-eslint/no-use-before-define": "off",
     "import/prefer-default-export": "off",
-    "import/no-internal-modules": ["error", {
-      "allow": ["annotations/*"]
-    }],
+    "import/no-internal-modules": [
+      "error",
+      {
+        "allow": [
+          "annotations/*"
+        ]
+      }
+    ],
     "import/order": [
       "error",
       {
@@ -36,9 +53,19 @@
           "order": "asc"
         },
         "groups": [
-          ["object", "builtin", "external"],
-          ["internal", "parent"],
-          ["sibling", "index"]
+          [
+            "object",
+            "builtin",
+            "external"
+          ],
+          [
+            "internal",
+            "parent"
+          ],
+          [
+            "sibling",
+            "index"
+          ]
         ],
         "newlines-between": "always"
       }

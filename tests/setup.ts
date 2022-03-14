@@ -1,10 +1,3 @@
-import { setConfig } from "../src/config";
+import { EnvVar } from "../src/types";
 
-setConfig({
-  logger: {
-    level: "silent",
-    transport: {
-      target: "pino-pretty",
-    },
-  },
-});
+process.env[EnvVar.LOG_LEVEL] = "silent";
