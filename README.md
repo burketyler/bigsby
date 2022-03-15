@@ -63,4 +63,4 @@ to an individual handler, or even to a specific version of a handler.
 Tap into a diverse range of hooks exposed throughout Bigsby's request lifecycle. It's simple to
 build highly customizable execution flows.
 
-<a href="https://burketyler.github.io/bigsby/docs"><p align="center" style="font-size: 25px">View full documentation</p></a>
+<a href="https://burketyler.github.io/bigsby/docs/setup"><p align="center" style="font-size: 25px">View full documentation</p></a>
