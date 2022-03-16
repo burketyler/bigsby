@@ -1,3 +1,12 @@
+# [1.1.0](https://github.com/burketyler/bigsby/compare/v1.0.1...v1.1.0) (2022-03-16)
+
+
+### Features
+
+* bump version ([04dbd51](https://github.com/burketyler/bigsby/commit/04dbd5112cdc990077f15ba8cf7977c6ee980726))
+* bump version ([99ae7f5](https://github.com/burketyler/bigsby/commit/99ae7f543a9dc7515780d971fdbe47f01c7c281c))
+* bump version ([99628c6](https://github.com/burketyler/bigsby/commit/99628c6190234311fb8640f3c35d00d6c8eed1cf))
+
 ## [1.0.1](https://github.com/burketyler/bigsby/compare/v1.0.0...v1.0.1) (2022-03-16)
 
 
