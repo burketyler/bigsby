@@ -54,3 +54,19 @@ export {
 } from "./src/types";
 
 export * from "pino";
+
+export {
+  Injectable,
+  InjectionContainer,
+  InjectionContainerOptions,
+  InjectableItem,
+  Newable,
+  Autowire,
+  Env,
+  envOptional,
+  envRequired,
+  injectable,
+  InjectionError,
+  InjectableOptions,
+  env,
+} from "ts-injection";
