@@ -42,10 +42,12 @@ describe("Plugins tests", () => {
           mockContextExpect(context.one);
         });
         instance.registerApiHook("preResponse", async ({ response }) => {
-          return new ResponseBuilder(response)
-            .body(options?.expect)
-            .statusCode(404)
-            .build();
+          return {
+            response: new ResponseBuilder(response)
+              .body(options?.expect)
+              .statusCode(404),
+            action: "TAKEOVER"
+          };
         });
       },
     };

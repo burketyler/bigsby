@@ -38,6 +38,8 @@ export {
   HandlerClassesInput,
   StandardizedEvent,
   AuthMethod,
+  HookInput,
+  HookResult,
   ApiErrorResponseBody,
   HandlerFunction,
   BigsbyPluginRegistration,

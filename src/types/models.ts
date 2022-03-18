@@ -149,6 +149,13 @@ export interface BigsbyConfig {
 
 export type HookChain<HookMethod> = HookMethod[];
 
+export type HookResult = {
+  response: ResponseBuilder;
+  takeover?: boolean;
+} | void;
+
+export type HookInput<InputType> = InputType & { prevResult?: HookResult };
+
 export interface ApiConfig {
   request: {
     enableTypeCoercion: boolean;
@@ -168,69 +175,79 @@ export interface ApiConfig {
   lifecycle?: {
     onInit?: HookChain<(inputs: { bigsby: BigsbyInstance }) => Promise<void>>;
     preInvoke?: HookChain<
-      (inputs: {
-        context: RequestContext;
-        prevResponse?: ResponseBuilder;
-      }) => Promise<ApiResponse | void>
+      (
+        inputs: HookInput<{
+          context: RequestContext;
+        }>
+      ) => Promise<HookResult>
     >;
     preAuth?: HookChain<
-      (inputs: {
-        context: RequestContext;
-        prevResponse?: ResponseBuilder;
-      }) => Promise<ApiResponse | void>
+      (
+        inputs: HookInput<{
+          context: RequestContext;
+        }>
+      ) => Promise<HookResult>
     >;
     onAuthFail?: HookChain<
-      <ErrorType>(inputs: {
-        error: ErrorType;
-        context: RequestContext;
-        prevResponse?: ResponseBuilder;
-      }) => Promise<ApiResponse | void>
+      <ErrorType>(
+        inputs: HookInput<{
+          error: ErrorType;
+          context: RequestContext;
+        }>
+      ) => Promise<HookResult>
     >;
     preParse?: HookChain<
-      (inputs: {
-        context: RequestContext;
-        prevResponse?: ResponseBuilder;
-      }) => Promise<ApiResponse | void>
+      (
+        inputs: HookInput<{
+          context: RequestContext;
+        }>
+      ) => Promise<HookResult>
     >;
     preValidate?: HookChain<
-      (inputs: {
-        context: RequestContext;
-        prevResponse?: ResponseBuilder;
-      }) => Promise<ApiResponse | void>
+      (
+        inputs: HookInput<{
+          context: RequestContext;
+        }>
+      ) => Promise<HookResult>
     >;
     onRequestInvalid?: HookChain<
-      (inputs: {
-        error: ValidationError | RequestParseError;
-        context: RequestContext;
-        prevResponse?: ResponseBuilder;
-      }) => Promise<ApiResponse | void>
+      (
+        inputs: HookInput<{
+          error: ValidationError | RequestParseError;
+          context: RequestContext;
+        }>
+      ) => Promise<HookResult>
     >;
     preExecute?: HookChain<
-      (inputs: {
-        context: RequestContext;
-        prevResponse?: ResponseBuilder;
-      }) => Promise<ApiResponse | void>
+      (
+        inputs: HookInput<{
+          context: RequestContext;
+        }>
+      ) => Promise<HookResult>
     >;
     preResponse?: HookChain<
-      (inputs: {
-        response: ApiResponse;
-        context: RequestContext;
-        prevResponse?: ResponseBuilder;
-      }) => Promise<ApiResponse | void>
+      (
+        inputs: HookInput<{
+          response: ApiResponse;
+          context: RequestContext;
+        }>
+      ) => Promise<HookResult>
     >;
     onResponseInvalid?: HookChain<
-      (inputs: {
-        error: ValidationError | TypeCoercionError;
-        context: RequestContext;
-        prevResponse?: ResponseBuilder;
-      }) => Promise<ApiResponse | void>
+      (
+        inputs: HookInput<{
+          error: ValidationError | TypeCoercionError;
+          context: RequestContext;
+        }>
+      ) => Promise<HookResult>
     >;
     onError?: HookChain<
-      (inputs: {
-        error: unknown;
-        context?: RequestContext;
-        prevResponse?: ResponseBuilder;
-      }) => Promise<ApiResponse | void>
+      (
+        inputs: HookInput<{
+          error: unknown;
+          context?: RequestContext;
+        }>
+      ) => Promise<HookResult>
     >;
   };
 }

@@ -4,7 +4,7 @@ export {
   isObject,
   isApiResponse,
 } from "./reflection";
-export { invokeHookChain, resolveHookChain } from "./hooks";
+export { resolveHookChain, resolveHookChainDefault } from "./hooks";
 export { freezeDeep } from "./object";
 export {
   tryParseObject,

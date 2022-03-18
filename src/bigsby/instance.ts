@@ -27,7 +27,7 @@ import {
   BigsbyConfig,
   ApiConfig,
 } from "../types";
-import { invokeHookChain, resolveHookChain } from "../utils";
+import { resolveHookChain, resolveHookChainDefault } from "../utils";
 
 import { defaultConfig, ERRORED_HANDLER_INSTANCE } from "./constants";
 import {
@@ -219,7 +219,9 @@ export class BigsbyInstance {
 
   public async onApiInit(apiConfig: ApiConfig): Promise<void> {
     if (!this.hasInitialized) {
-      await invokeHookChain([apiConfig.lifecycle?.onInit], { bigsby: this });
+      await resolveHookChain([apiConfig.lifecycle?.onInit], {
+        bigsby: this,
+      });
       this.hasInitialized = true;
     }
   }
@@ -286,10 +288,14 @@ export class BigsbyInstance {
       } catch (error) {
         logger.error({ error }, "Unexpected error during handler invocation.");
 
-        return resolveHookChain([config.lifecycle?.onError], internalError(), {
-          error,
-          context,
-        });
+        return resolveHookChainDefault(
+          [config.lifecycle?.onError],
+          internalError(),
+          {
+            error,
+            context,
+          }
+        );
       }
     };
   }

@@ -228,26 +228,39 @@ describe("Lifecycle tests", () => {
 
   describe("When a hook takes over the response", () => {
     it("Should pass prevResponse to each hook in a hook chain", async () => {
-      const firstResponse = {
-        statusCode: 500,
-        body: "firstResponse",
+      const firstResult = {
+        response: new ResponseBuilder("first").statusCode(500)
       };
-      const secondResponse = {
-        statusCode: 404,
-        body: "secondResponse",
+      const secondResult = {
+        response: new ResponseBuilder("second").statusCode(404),
+        takeover: true
       };
 
-      mockPreAuth[0].mockResolvedValueOnce(firstResponse);
-      mockPreAuth[1].mockResolvedValueOnce(secondResponse);
+      mockPreAuth[0].mockResolvedValueOnce(firstResult);
+      mockPreAuth[1].mockResolvedValueOnce(secondResult);
 
       const response = await handler(mockEvent, mockContext, () => {});
 
       expect(mockPreAuth[1]).toHaveBeenCalledWith(
         expect.objectContaining({
-          prevResponse: new ResponseBuilder(firstResponse),
+          prevResult: new ResponseBuilder(firstResult),
         })
       );
-      expect(response).toEqual(expect.objectContaining(secondResponse));
+      expect(response).toEqual(expect.objectContaining(secondResult.response.build()));
+    });
+
+    it("Should return immediately after receiving a takeover command", async () => {
+      const firstResult = {
+        response: new ResponseBuilder("first").statusCode(500),
+        takeover: true
+      };
+
+      mockPreAuth[0].mockResolvedValueOnce(firstResult);
+
+      const response = await handler(mockEvent, mockContext, () => {});
+
+      expect(mockPreAuth[1]).not.toHaveBeenCalled();
+      expect(response).toEqual(expect.objectContaining(firstResult.response.build()));
     });
 
     it.each([
@@ -257,18 +270,18 @@ describe("Lifecycle tests", () => {
       ["preExecute", mockPreExe],
       ["preResponse", mockPreRes],
     ])(
-      "Should return the ApiResponse: %s",
+      "Should return the takeover ApiResponse: %s",
       async (name: string, mockHook: jest.Mock[]) => {
-        const apiResponse = {
-          statusCode: 500,
-          body: name,
+        const hookResult = {
+          response: new ResponseBuilder(name).statusCode(404),
+          takeover: true
         };
 
-        mockHook[0].mockResolvedValueOnce(apiResponse);
+        mockHook[0].mockResolvedValueOnce(hookResult);
 
         const response = await handler(mockEvent, mockContext, () => {});
 
-        expect(response).toEqual(expect.objectContaining(apiResponse));
+        expect(response).toEqual(expect.objectContaining(hookResult.response.build()));
       }
     );
   });
@@ -331,16 +344,16 @@ describe("Lifecycle tests", () => {
 
     describe("When a onError hook takes over the response by returning an ApiResponse", () => {
       it("Should return the ApiResponse", async () => {
-        const apiResponse = {
-          statusCode: 500,
-          body: "onError",
-        };
+        const hookResult = {
+          response: new ResponseBuilder("onError").statusCode(404),
+          takeover: true
+        }
 
-        mockOnError[0].mockResolvedValueOnce(apiResponse);
+        mockOnError[0].mockResolvedValueOnce(hookResult);
 
         const response = await handler(mockEvent, mockContext, () => {});
 
-        expect(response).toEqual(expect.objectContaining(apiResponse));
+        expect(response).toEqual(expect.objectContaining(hookResult.response.build()));
       });
     });
   });
@@ -371,16 +384,16 @@ describe("Lifecycle tests", () => {
 
     describe("When a onAuthFail hook takes over the response by returning an ApiResponse", () => {
       it("Should return the ApiResponse", async () => {
-        const apiResponse = {
-          statusCode: 500,
-          body: "onAuthFail",
-        };
+        const hookResult = {
+          response: new ResponseBuilder("onAuthFail").statusCode(404),
+          takeover: true
+        }
 
-        mockOnAuthFail[0].mockResolvedValueOnce(apiResponse);
+        mockOnAuthFail[0].mockResolvedValueOnce(hookResult);
 
         const response = await handler(mockEvent, mockContext, () => {});
 
-        expect(response).toEqual(expect.objectContaining(apiResponse));
+        expect(response).toEqual(expect.objectContaining(hookResult.response.build()));
       });
     });
   });
@@ -415,16 +428,16 @@ describe("Lifecycle tests", () => {
 
     describe("When a onRequestInvalid hook takes over the response by returning an ApiResponse", () => {
       it("Should return the ApiResponse", async () => {
-        const apiResponse = {
-          statusCode: 500,
-          body: "onRequestInvalid",
-        };
+        const hookResult = {
+          response: new ResponseBuilder("onRequestInvalid").statusCode(404),
+          takeover: true
+        }
 
-        mockOnRequestInvalid[0].mockResolvedValueOnce(apiResponse);
+        mockOnRequestInvalid[0].mockResolvedValueOnce(hookResult);
 
         const response = await handler(mockEvent, mockContext, () => {});
 
-        expect(response).toEqual(expect.objectContaining(apiResponse));
+        expect(response).toEqual(expect.objectContaining(hookResult.response.build()));
       });
     });
   });
@@ -459,16 +472,16 @@ describe("Lifecycle tests", () => {
 
     describe("When a onResponseInvalid hook takes over the response by returning an ApiResponse", () => {
       it("Should return the ApiResponse", async () => {
-        const apiResponse = {
-          statusCode: 500,
-          body: "onResponseInvalid",
-        };
+        const hookResult = {
+          response: new ResponseBuilder("onResponseInvalid").statusCode(404),
+          takeover: true
+        }
 
-        mockOnResponseInvalid[0].mockResolvedValueOnce(apiResponse);
+        mockOnResponseInvalid[0].mockResolvedValueOnce(hookResult);
 
         const response = await handler(mockEvent, mockContext, () => {});
 
-        expect(response).toEqual(expect.objectContaining(apiResponse));
+        expect(response).toEqual(expect.objectContaining(hookResult.response.build()));
       });
     });
   });

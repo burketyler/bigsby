@@ -33,7 +33,11 @@ import {
   ResponseParseError,
   ApiConfig,
 } from "../types";
-import { invokeHookChain, isApiResponse, resolveHookChain } from "../utils";
+import {
+  resolveHookChain,
+  isApiResponse,
+  resolveHookChainDefault,
+} from "../utils";
 import { validateRequest, validateResponse } from "../validation";
 import { getHandlerClassForVersion } from "../version";
 
@@ -125,7 +129,7 @@ export async function runRestApiLifecycle(
   const { lifecycle } = config;
   const { logger } = context.bigsby;
 
-  let response: ApiResponse;
+  let response: ApiResponse | undefined;
 
   // Init
   logger.debug("Calling onInit.");
@@ -133,7 +137,9 @@ export async function runRestApiLifecycle(
 
   // Invoke
   logger.debug("Calling preInvoke.");
-  response = await invokeHookChain([lifecycle?.preInvoke], { context });
+  response = await resolveHookChain([lifecycle?.preInvoke], {
+    context,
+  });
   if (response) {
     return transformResponse(response, context);
   }
@@ -141,7 +147,9 @@ export async function runRestApiLifecycle(
   // Authenticate
   if (config.request.auth) {
     logger.debug("Calling preAuth.");
-    response = await invokeHookChain([lifecycle?.preAuth], { context });
+    response = await resolveHookChain([lifecycle?.preAuth], {
+      context,
+    });
     if (response) {
       return transformResponse(response, context);
     }
@@ -155,7 +163,9 @@ export async function runRestApiLifecycle(
   // Validate (Request)
   if (config.request.schema) {
     logger.debug("Calling preValidate.");
-    response = await invokeHookChain([lifecycle?.preValidate], { context });
+    response = await resolveHookChain([lifecycle?.preValidate], {
+      context,
+    });
     if (response) {
       return transformResponse(response, context);
     }
@@ -168,7 +178,9 @@ export async function runRestApiLifecycle(
 
   // Parse
   logger.debug("Calling preParse.");
-  response = await invokeHookChain([lifecycle?.preParse], { context });
+  response = await resolveHookChain([lifecycle?.preParse], {
+    context,
+  });
   if (response) {
     return transformResponse(response, context);
   }
@@ -180,7 +192,9 @@ export async function runRestApiLifecycle(
 
   // Execute Handler
   logger.debug("Calling preExecute.");
-  response = await invokeHookChain([lifecycle?.preExecute], { context });
+  response = await resolveHookChain([lifecycle?.preExecute], {
+    context,
+  });
   if (response) {
     return transformResponse(response, context);
   }
@@ -206,7 +220,7 @@ export async function runRestApiLifecycle(
 
   // Respond
   logger.debug("Calling preResponse.");
-  response = await resolveHookChain([lifecycle?.preResponse], response, {
+  response = await resolveHookChainDefault([lifecycle?.preResponse], response, {
     response,
     context,
   });
@@ -223,7 +237,7 @@ export async function convertErrorToResponse(
 
   if (error instanceof AuthenticationError) {
     logger.debug("Calling onAuthFail.");
-    return resolveHookChain(
+    return resolveHookChainDefault(
       [lifecycle?.onAuthFail],
       error.userError instanceof ForbiddenError ? forbidden() : unauthorized(),
       { error: error.userError, context }
@@ -235,10 +249,14 @@ export async function convertErrorToResponse(
     error instanceof RequestParseError
   ) {
     logger.debug("Calling onRequestInvalid.");
-    return resolveHookChain([lifecycle?.onRequestInvalid], badRequest(), {
-      error: (error as RequestInvalidError).validateErr ?? error,
-      context,
-    });
+    return resolveHookChainDefault(
+      [lifecycle?.onRequestInvalid],
+      badRequest(),
+      {
+        error: (error as RequestInvalidError).validateErr ?? error,
+        context,
+      }
+    );
   }
 
   if (
@@ -246,7 +264,7 @@ export async function convertErrorToResponse(
     error instanceof ResponseParseError
   ) {
     logger.debug("Calling onResponseInvalid then onError.");
-    return resolveHookChain(
+    return resolveHookChainDefault(
       [lifecycle?.onResponseInvalid, lifecycle?.onError],
       internalError(),
       { error: (error as RequestInvalidError).validateErr ?? error, context }
@@ -254,7 +272,7 @@ export async function convertErrorToResponse(
   }
 
   logger.debug("Calling onError.");
-  return resolveHookChain([lifecycle?.onError], internalError(), {
+  return resolveHookChainDefault([lifecycle?.onError], internalError(), {
     error,
     context,
   });

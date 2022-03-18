@@ -70,6 +70,6 @@ export function isObject(value: unknown): boolean {
   return typeof value === "object" && value !== null;
 }
 
-export function isApiResponse(response: ApiResponse): response is ApiResponse {
-  return !!response?.statusCode;
+export function isApiResponse(response: unknown): response is ApiResponse {
+  return !!(response as ApiResponse)?.statusCode;
 }

@@ -1,51 +1,45 @@
 import { ResponseBuilder } from "../response";
-
-export async function invokeHookChain<
-  HookType extends ((inputs: HookInputs) => Promise<HookResult | void>)[],
-  HookInputs extends Record<string, unknown> & {
-    prevResponse?: ResponseBuilder;
-  },
-  HookResult
->(
-  hookChain: (HookType | undefined)[],
-  inputs: HookInputs
-): Promise<HookResult> {
-  return resolveHookChain(
-    hookChain,
-    undefined as unknown as HookResult,
-    inputs
-  );
-}
+import { ApiResponse, HookInput, HookResult } from "../types";
 
 export async function resolveHookChain<
-  HookType extends ((inputs: HookInputs) => Promise<HookResult | void>)[],
-  HookInputs extends Record<string, unknown> & {
-    prevResponse?: ResponseBuilder;
-  },
-  HookResult
+  HookType extends ((inputs: HookInputs) => Promise<HookResult>)[],
+  HookInputs extends HookInput<Record<string, unknown>>
 >(
   hookChainArray: (HookType | undefined)[],
-  defaultResult: HookResult,
   inputs: HookInputs
-): Promise<HookResult> {
-  let prevResponse: HookResult | void | undefined;
+): Promise<ApiResponse | undefined> {
+  let prevHookResult: HookResult | undefined;
 
   /* eslint-disable no-restricted-syntax, no-await-in-loop */
   for (const chain of hookChainArray) {
     if (chain) {
       for (const hook of chain) {
-        const response = await hook({
+        const hookResult = await hook({
           ...inputs,
-          prevResponse: new ResponseBuilder(prevResponse),
+          prevResult: prevHookResult
+            ? new ResponseBuilder(prevHookResult)
+            : undefined,
         });
 
-        if (response) {
-          prevResponse = response;
+        if (hookResult?.takeover) {
+          return hookResult.response.build();
         }
+
+        prevHookResult = hookResult;
       }
     }
   }
-  /* eslint-enable no-restricted-syntax, no-await-in-loop */
 
-  return prevResponse ?? defaultResult;
+  return prevHookResult?.response.build();
+}
+
+export async function resolveHookChainDefault<
+  HookType extends ((inputs: HookInputs) => Promise<HookResult>)[],
+  HookInputs extends HookInput<Record<string, unknown>>
+>(
+  hookChains: (HookType | undefined)[],
+  defaultResponse: ApiResponse,
+  inputs: HookInputs
+): Promise<ApiResponse> {
+  return (await resolveHookChain(hookChains, inputs)) ?? defaultResponse;
 }
