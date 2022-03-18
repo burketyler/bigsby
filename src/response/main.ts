@@ -25,6 +25,7 @@ const {
   HTTP_STATUS_NOT_FOUND,
   HTTP_STATUS_UNAUTHORIZED,
   HTTP_STATUS_FORBIDDEN,
+  HTTP_STATUS_PERMANENT_REDIRECT,
   HTTP_STATUS_CREATED,
   HTTP_STATUS_NO_CONTENT,
 } = constants;
@@ -39,6 +40,13 @@ export function noContent(body?: ApiResponse["body"]): ApiResponse {
 
 export function created(body?: ApiResponse["body"]): ApiResponse {
   return new ResponseBuilder(body).statusCode(HTTP_STATUS_CREATED).build();
+}
+
+export function redirect(location: string): ApiResponse {
+  return new ResponseBuilder()
+    .statusCode(HTTP_STATUS_PERMANENT_REDIRECT)
+    .header("Location", location)
+    .build();
 }
 
 export function internalError(body?: ApiResponse["body"]): ApiResponse {

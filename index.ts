@@ -1,5 +1,6 @@
 /* eslint-disable import/no-internal-modules */
 
+export { Bigsby } from "./src/bigsby";
 export { Body, Query, Path, Context, Header } from "./src/parsing";
 export { Api } from "./src/api";
 export { Authentication, Auth } from "./src/authentication";
@@ -15,6 +16,7 @@ export {
   created,
   noContent,
   badRequest,
+  redirect,
   unauthorized,
   forbidden,
   notFound,

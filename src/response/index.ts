@@ -9,4 +9,5 @@ export {
   created,
   noContent,
   notFound,
+  redirect,
 } from "./main";
