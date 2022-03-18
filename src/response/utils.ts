@@ -65,8 +65,9 @@ function inferContentType(body: unknown): string | undefined {
   switch (typeof body) {
     case "bigint":
     case "number":
-    case "string":
       return "text/plain";
+    case "string":
+      return inferStringContentType(body);
     case "boolean":
     case "object":
       return "application/json";
@@ -79,4 +80,12 @@ function inferContentType(body: unknown): string | undefined {
         `Type of response body is invalid: ${typeof body}. Cannot infer content type.`
       );
   }
+}
+
+function inferStringContentType(body: string): string {
+  if (body.match(/^<!doctype\s*html>/)) {
+    return "text/html";
+  }
+
+  return "text/plain";
 }
