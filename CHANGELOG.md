@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/burketyler/bigsby/compare/v1.4.1...v1.4.2) (2022-03-18)
+
+
+### Bug Fixes
+
+* **response:** detect html string and infer content type ([c926b10](https://github.com/burketyler/bigsby/commit/c926b1032050eefe0d416cf46bfe7fe823d23aeb))
+
 ## [1.4.1](https://github.com/burketyler/bigsby/compare/v1.4.0...v1.4.1) (2022-03-18)
 
 
