@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/burketyler/bigsby/compare/v1.4.0...v1.4.1) (2022-03-18)
+
+
+### Bug Fixes
+
+* add redirect builder, fix export ([82e91e3](https://github.com/burketyler/bigsby/commit/82e91e34aeae5aa28644cf2e9f4568c6349883bd))
+
 # [1.4.0](https://github.com/burketyler/bigsby/compare/v1.3.1...v1.4.0) (2022-03-18)
 
 
