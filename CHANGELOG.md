@@ -1,3 +1,15 @@
+# [1.2.0](https://github.com/burketyler/bigsby/compare/v1.1.0...v1.2.0) (2022-03-18)
+
+
+### Bug Fixes
+
+* **lifecycle:** refactor lifecycle takeovers ([84ec61d](https://github.com/burketyler/bigsby/commit/84ec61dac7bde52b381e7c865b5524cacaa4809e))
+
+
+### Features
+
+* **lifecycle:** change hook model to use hookresults instead of apiresponse ([d53aefd](https://github.com/burketyler/bigsby/commit/d53aefd3cbec9242434d232cd0453d532efde8b8))
+
 # [1.1.0](https://github.com/burketyler/bigsby/compare/v1.0.1...v1.1.0) (2022-03-16)
 
 
