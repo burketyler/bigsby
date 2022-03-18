@@ -51,6 +51,8 @@ export {
   AuthScheme,
   AuthMethod,
   ApiEvent,
+  HookResult,
+  HookInput,
 } from "./src/types";
 
 export * from "pino";
