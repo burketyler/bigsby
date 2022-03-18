@@ -229,7 +229,7 @@ describe("Lifecycle tests", () => {
   describe("When a hook takes over the response", () => {
     it("Should pass prevResponse to each hook in a hook chain", async () => {
       const firstResult = {
-        response: new ResponseBuilder("first").statusCode(500)
+        response: new ResponseBuilder("first").statusCode(500),
       };
       const thirdResult = {
         response: new ResponseBuilder("second").statusCode(404),
@@ -246,13 +246,15 @@ describe("Lifecycle tests", () => {
           prevResult: new ResponseBuilder(firstResult),
         })
       );
-      expect(response).toEqual(expect.objectContaining(thirdResult.response.build()));
+      expect(response).toEqual(
+        expect.objectContaining(thirdResult.response.build())
+      );
     });
 
     it("Should return immediately after receiving the immediate command", async () => {
       const firstResult = {
         response: new ResponseBuilder("first").statusCode(500),
-        immediate: true
+        immediate: true,
       };
 
       mockPreAuth[0].mockResolvedValueOnce(firstResult);
@@ -260,7 +262,9 @@ describe("Lifecycle tests", () => {
       const response = await handler(mockEvent, mockContext, () => {});
 
       expect(mockPreAuth[1]).not.toHaveBeenCalled();
-      expect(response).toEqual(expect.objectContaining(firstResult.response.build()));
+      expect(response).toEqual(
+        expect.objectContaining(firstResult.response.build())
+      );
     });
 
     it.each([
@@ -274,14 +278,16 @@ describe("Lifecycle tests", () => {
       async (name: string, mockHook: jest.Mock[]) => {
         const hookResult = {
           response: new ResponseBuilder(name).statusCode(404),
-          immediate: true
+          immediate: true,
         };
 
         mockHook[0].mockResolvedValueOnce(hookResult);
 
         const response = await handler(mockEvent, mockContext, () => {});
 
-        expect(response).toEqual(expect.objectContaining(hookResult.response.build()));
+        expect(response).toEqual(
+          expect.objectContaining(hookResult.response.build())
+        );
       }
     );
   });
@@ -346,14 +352,16 @@ describe("Lifecycle tests", () => {
       it("Should return the ApiResponse", async () => {
         const hookResult = {
           response: new ResponseBuilder("onError").statusCode(404),
-          immediate: true
-        }
+          immediate: true,
+        };
 
         mockOnError[0].mockResolvedValueOnce(hookResult);
 
         const response = await handler(mockEvent, mockContext, () => {});
 
-        expect(response).toEqual(expect.objectContaining(hookResult.response.build()));
+        expect(response).toEqual(
+          expect.objectContaining(hookResult.response.build())
+        );
       });
     });
   });
@@ -386,14 +394,16 @@ describe("Lifecycle tests", () => {
       it("Should return the ApiResponse", async () => {
         const hookResult = {
           response: new ResponseBuilder("onAuthFail").statusCode(404),
-          immediate: true
-        }
+          immediate: true,
+        };
 
         mockOnAuthFail[0].mockResolvedValueOnce(hookResult);
 
         const response = await handler(mockEvent, mockContext, () => {});
 
-        expect(response).toEqual(expect.objectContaining(hookResult.response.build()));
+        expect(response).toEqual(
+          expect.objectContaining(hookResult.response.build())
+        );
       });
     });
   });
@@ -430,14 +440,16 @@ describe("Lifecycle tests", () => {
       it("Should return the ApiResponse", async () => {
         const hookResult = {
           response: new ResponseBuilder("onRequestInvalid").statusCode(404),
-          immediate: true
-        }
+          immediate: true,
+        };
 
         mockOnRequestInvalid[0].mockResolvedValueOnce(hookResult);
 
         const response = await handler(mockEvent, mockContext, () => {});
 
-        expect(response).toEqual(expect.objectContaining(hookResult.response.build()));
+        expect(response).toEqual(
+          expect.objectContaining(hookResult.response.build())
+        );
       });
     });
   });
@@ -474,14 +486,16 @@ describe("Lifecycle tests", () => {
       it("Should return the ApiResponse", async () => {
         const hookResult = {
           response: new ResponseBuilder("onResponseInvalid").statusCode(404),
-          immediate: true
-        }
+          immediate: true,
+        };
 
         mockOnResponseInvalid[0].mockResolvedValueOnce(hookResult);
 
         const response = await handler(mockEvent, mockContext, () => {});
 
-        expect(response).toEqual(expect.objectContaining(hookResult.response.build()));
+        expect(response).toEqual(
+          expect.objectContaining(hookResult.response.build())
+        );
       });
     });
   });
