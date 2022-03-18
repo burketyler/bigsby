@@ -21,7 +21,7 @@ const {
 
 const mockOnInit = [jest.fn(), jest.fn()];
 const mockPreInvoke = [jest.fn(), jest.fn()];
-const mockPreAuth = [jest.fn(), jest.fn()];
+const mockPreAuth = [jest.fn(), jest.fn(), jest.fn()];
 const mockPreVal = [jest.fn(), jest.fn()];
 const mockPreParse = [jest.fn(), jest.fn()];
 const mockPreExe = [jest.fn(), jest.fn()];
@@ -231,13 +231,13 @@ describe("Lifecycle tests", () => {
       const firstResult = {
         response: new ResponseBuilder("first").statusCode(500)
       };
-      const secondResult = {
+      const thirdResult = {
         response: new ResponseBuilder("second").statusCode(404),
-        takeover: true
       };
 
       mockPreAuth[0].mockResolvedValueOnce(firstResult);
-      mockPreAuth[1].mockResolvedValueOnce(secondResult);
+      mockPreAuth[1].mockResolvedValueOnce(undefined);
+      mockPreAuth[2].mockResolvedValueOnce(thirdResult);
 
       const response = await handler(mockEvent, mockContext, () => {});
 
@@ -246,13 +246,13 @@ describe("Lifecycle tests", () => {
           prevResult: new ResponseBuilder(firstResult),
         })
       );
-      expect(response).toEqual(expect.objectContaining(secondResult.response.build()));
+      expect(response).toEqual(expect.objectContaining(thirdResult.response.build()));
     });
 
-    it("Should return immediately after receiving a takeover command", async () => {
+    it("Should return immediately after receiving the immediate command", async () => {
       const firstResult = {
         response: new ResponseBuilder("first").statusCode(500),
-        takeover: true
+        immediate: true
       };
 
       mockPreAuth[0].mockResolvedValueOnce(firstResult);
@@ -274,7 +274,7 @@ describe("Lifecycle tests", () => {
       async (name: string, mockHook: jest.Mock[]) => {
         const hookResult = {
           response: new ResponseBuilder(name).statusCode(404),
-          takeover: true
+          immediate: true
         };
 
         mockHook[0].mockResolvedValueOnce(hookResult);
@@ -346,7 +346,7 @@ describe("Lifecycle tests", () => {
       it("Should return the ApiResponse", async () => {
         const hookResult = {
           response: new ResponseBuilder("onError").statusCode(404),
-          takeover: true
+          immediate: true
         }
 
         mockOnError[0].mockResolvedValueOnce(hookResult);
@@ -386,7 +386,7 @@ describe("Lifecycle tests", () => {
       it("Should return the ApiResponse", async () => {
         const hookResult = {
           response: new ResponseBuilder("onAuthFail").statusCode(404),
-          takeover: true
+          immediate: true
         }
 
         mockOnAuthFail[0].mockResolvedValueOnce(hookResult);
@@ -430,7 +430,7 @@ describe("Lifecycle tests", () => {
       it("Should return the ApiResponse", async () => {
         const hookResult = {
           response: new ResponseBuilder("onRequestInvalid").statusCode(404),
-          takeover: true
+          immediate: true
         }
 
         mockOnRequestInvalid[0].mockResolvedValueOnce(hookResult);
@@ -474,7 +474,7 @@ describe("Lifecycle tests", () => {
       it("Should return the ApiResponse", async () => {
         const hookResult = {
           response: new ResponseBuilder("onResponseInvalid").statusCode(404),
-          takeover: true
+          immediate: true
         }
 
         mockOnResponseInvalid[0].mockResolvedValueOnce(hookResult);

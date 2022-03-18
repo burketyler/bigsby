@@ -151,7 +151,7 @@ export type HookChain<HookMethod> = HookMethod[];
 
 export type HookResult = {
   response: ResponseBuilder;
-  takeover?: boolean;
+  immediate?: boolean;
 } | void;
 
 export type HookInput<InputType> = InputType & { prevResult?: HookResult };

@@ -17,19 +17,19 @@ authentication, execution and error handling.
 Bigsby exposes hooks that enable the creation of complex and powerful request workflows. Each hook accepts
 an array of functions known as `HookChains`. Hooks can be used to perform special startup or shutdown operations,
 transform request/response payloads, or add metadata to the `RequestContext`. Many hooks can even be used to
-[takeover](#response-takeover) the `ApiResponse` a handler returns.
+[immediate](#response-immediate) the `ApiResponse` a handler returns.
 
 :::tip
 
 All hooks are asynchronous, they're called in the order they appear in the input array, and they receive the
-`RequestContext` of the invocation (some hooks may receive additional inputs too, see below).
+`RequestContext` of the invocation (some hooks receive additional inputs too, see below).
 
 :::
 
 ### onInit
 
 The `onInit` hook chain is called a single time when the Lambda handler instance is first invoked, before any
-other stage in the lifecycle. It receives the Bigsby instance the hook is registered; it cannot takeover the response.
+other stage in the lifecycle. It receives the Bigsby instance the hook is registered; it cannot immediate the response.
 
 ### preInvoke
 
@@ -101,7 +101,13 @@ calling any hook chain that isn't expected to throw an error.
 
 ## Response Takeover
 
-Hooks (except [onInit](#oninit)) can 'takeover' a handler's response by optionally returning an `ApiResponse`. If this occurs,
-the handler will discontinue the request lifecycle and instead immediately return the response following the completion
-of the hook chain. Each hook in the chain will receive the original inputs, plus a `ResponseBuilder` representing the `ApiResponse`
-returned by the previous hook in the chain, or undefined.
+Hooks (except [onInit](#oninit)) can 'takeover' a handler's response by optionally returning a `HookResult`. If you
+specify the `immediate` option, the handler will discontinue the request lifecycle and immediately return the
+response. If `immediate` is not specified, each hook in the chain will receive the `HookResult` returned by the
+previous hook in the chain and the resulting `ApiResponse` at the end of the chain will return.
+
+<div style={{ display: "flex", justifyContent: "center" }}>
+  <a href={"/bigsby/img/takeover-diagram.png"} target={"_blank"}>
+    <img src={"/bigsby/img/takeover-diagram.png"} alt={"Response Takeover"} />
+  </a>
+</div>

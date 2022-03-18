@@ -21,11 +21,13 @@ export async function resolveHookChain<
             : undefined,
         });
 
-        if (hookResult?.takeover) {
+        if (hookResult?.immediate) {
           return hookResult.response.build();
         }
 
-        prevHookResult = hookResult;
+        if (hookResult) {
+          prevHookResult = hookResult;
+        }
       }
     }
   }
