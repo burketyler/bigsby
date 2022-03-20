@@ -87,25 +87,24 @@ export function validateRequest(
 
   if (schema?.body) {
     error = schema.body.validate(body).error;
-    logger.info(error, "Request body failed schema validation.");
+    logger.info("Request body failed schema validation.", { error });
   }
 
   if (schema?.headers) {
     error = schema.headers.validate(headers).error;
-    logger.info(error, "Request headers failed schema validation.");
+    logger.info("Request headers failed schema validation.", { error });
   }
 
   if (schema?.pathParameters) {
     error = schema.pathParameters.validate(pathParameters).error;
-    logger.info(error, "Request pathParameters failed schema validation.");
+    logger.info("Request pathParameters failed schema validation.", { error });
   }
 
   if (schema?.queryStringParameters) {
     error = schema.queryStringParameters.validate(queryStringParameters).error;
-    logger.info(
+    logger.info("Request queryStringParameters failed schema validation.", {
       error,
-      "Request queryStringParameters failed schema validation."
-    );
+    });
   }
 
   if (error) {
@@ -129,7 +128,7 @@ export function validateResponse(
   const result = schemaForCode?.validate(response);
 
   if (result?.error) {
-    logger.error(result.error, "Response failed schema validation.");
+    logger.error("Response failed schema validation.", { error: result.error });
 
     return fail(new ResponseInvalidError(result.error));
   }

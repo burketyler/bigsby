@@ -8,7 +8,6 @@ import {
 } from "aws-lambda";
 import { APIGatewayProxyResult } from "aws-lambda/trigger/api-gateway-proxy"; // eslint-disable-line import/no-unresolved
 import { AnySchema, Schema, ValidationError } from "joi";
-import { LoggerOptions } from "pino";
 
 import { BigsbyInstance } from "../bigsby";
 import { ResponseBuilder } from "../response";
@@ -143,7 +142,6 @@ export type ApiLifecycle = Required<Required<BigsbyConfig["api"]>["lifecycle"]>;
 export type ApiHookNames = keyof ApiLifecycle;
 
 export interface BigsbyConfig {
-  logger: LoggerOptions;
   api: ApiConfig;
 }
 

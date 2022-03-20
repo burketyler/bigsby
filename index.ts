@@ -57,8 +57,6 @@ export {
   HookInput,
 } from "./src/types";
 
-export * from "pino";
-
 export {
   Injectable,
   InjectionContainer,

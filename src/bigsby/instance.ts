@@ -1,11 +1,15 @@
 import { Context } from "aws-lambda";
 import cloneDeep from "lodash.clonedeep";
 import mergeWith from "lodash.mergewith";
-import { Logger, pino, stdSerializers } from "pino";
-import { fail, InjectionContainer, success, Throwable } from "ts-injection";
+import {
+  fail,
+  InjectionContainer,
+  Logger,
+  success,
+  Throwable,
+} from "ts-injection";
 
 import { INVOKE_METHOD_NAME } from "../constants";
-import { createGlobalBindings } from "../logging";
 import { parseApiGwEvent } from "../parsing";
 import { badRequest, internalError } from "../response";
 import {
@@ -15,7 +19,6 @@ import {
   BigsbyError,
   BigsbyPluginRegistration,
   DeepPartial,
-  EnvVar,
   HandlerClassesInput,
   HandlerFunction,
   AuthScheme,
@@ -29,7 +32,11 @@ import {
 } from "../types";
 import { resolveHookChain, resolveHookChainDefault } from "../utils";
 
-import { defaultConfig, ERRORED_HANDLER_INSTANCE } from "./constants";
+import {
+  defaultConfig,
+  ERRORED_HANDLER_INSTANCE,
+  LOG_ENV_KEY,
+} from "./constants";
 import {
   concatArray,
   convertErrorToResponse,
@@ -67,22 +74,7 @@ export class BigsbyInstance {
     this.plugins = [];
     this.authMethods = {};
     this.hasInitialized = false;
-    this.logger = pino({
-      enabled: true,
-      level: process.env.BIGSBY_LOG_LEVEL ?? "info",
-      transport:
-        process.env[EnvVar.LOG_PRETTY] === "true"
-          ? {
-              target: "pino-pretty",
-            }
-          : undefined,
-      serializers: {
-        error: stdSerializers.err,
-      },
-      formatters: {
-        bindings: createGlobalBindings(name),
-      },
-    });
+    this.logger = new Logger(this.name, LOG_ENV_KEY);
   }
 
   public getConfig(): BigsbyConfig {
@@ -174,7 +166,7 @@ export class BigsbyInstance {
     return async (event: ApiEvent, context: Context): Promise<ApiResponse> => {
       await this.initializePlugins();
 
-      this.logger.debug({ event, context }, "Received API Gateway event.");
+      this.logger.debug("Received API Gateway event.", { event, context });
 
       let config = mergeParamConfigs(
         this.logger,
@@ -211,7 +203,7 @@ export class BigsbyInstance {
         })
         .output();
 
-      this.logger.debug({ response }, "Response value.");
+      this.logger.debug("Response value.", { response });
 
       return response;
     };
@@ -286,7 +278,7 @@ export class BigsbyInstance {
           )
           .output();
       } catch (error) {
-        logger.error({ error }, "Unexpected error during handler invocation.");
+        logger.error("Unexpected error during handler invocation.", { error });
 
         return resolveHookChainDefault(
           [config.lifecycle?.onError],

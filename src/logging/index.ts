@@ -1,1 +1,0 @@
-export { createGlobalBindings } from "./main";

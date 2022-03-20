@@ -1,7 +1,6 @@
 import cloneDeep from "lodash.clonedeep";
 import mergeWith from "lodash.mergewith";
-import { Logger } from "pino";
-import { success, fail, Throwable } from "ts-injection";
+import { success, fail, Throwable, Logger } from "ts-injection";
 
 import { authenticate } from "../authentication";
 import { parseRequestParams } from "../parsing";
@@ -66,10 +65,10 @@ export function mergeParamConfigs(
 ): ApiConfig {
   const globalConfig = cloneDeep(config);
 
-  logger.debug(
-    { globalConfig, scopedConfig },
-    "Merging globalConfig <- scopedConfig."
-  );
+  logger.debug("Merging globalConfig <- scopedConfig.", {
+    globalConfig,
+    scopedConfig,
+  });
 
   return mergeWith(globalConfig, scopedConfig, concatArray);
 }

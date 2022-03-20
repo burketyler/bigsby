@@ -18,3 +18,5 @@ export const defaultConfig: BigsbyConfig = freezeDeep({
 export const ERRORED_HANDLER_INSTANCE = {
   [INVOKE_METHOD_NAME]: async () => internalError(),
 };
+
+export const LOG_ENV_KEY = "BIGSBY_DEBUG";

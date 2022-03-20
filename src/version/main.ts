@@ -1,5 +1,4 @@
-import { Logger } from "pino";
-import { fail, success, Throwable } from "ts-injection";
+import { fail, Logger, success, Throwable } from "ts-injection";
 
 import {
   ApiEvent,

@@ -173,7 +173,9 @@ export function transformResponse(
   const stringifyResult = tryStringify(enrichedResponse.body);
 
   if (stringifyResult.isError()) {
-    logger.error(stringifyResult.value(), "Failed to stringify response.");
+    logger.error("Failed to stringify response.", {
+      error: stringifyResult.value(),
+    });
     return fail(new ResponseParseError());
   }
 

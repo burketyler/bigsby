@@ -87,7 +87,7 @@ export function parseRequestParams(
 
   // eslint-disable-next-line no-restricted-syntax
   for (const instruction of sortInstructions(instructions)) {
-    logger.debug({ instruction }, `Evaluating instruction.`);
+    logger.debug("Evaluating instruction.", { instruction });
 
     const evaluateResult = evaluateInstruction(instruction, context);
 

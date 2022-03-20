@@ -21,7 +21,7 @@ export function addConfiguredDefaultHeaders(
   const { logger } = context.bigsby;
   const newHeaders = { ...response.headers };
 
-  logger.debug({ headers: response.headers }, "Adding default headers.");
+  logger.debug("Adding default headers.", { headers: response.headers });
 
   Object.entries(response.headers ?? {}).reduce(
     (
@@ -83,7 +83,7 @@ function inferContentType(body: unknown): string | undefined {
 }
 
 function inferStringContentType(body: string): string {
-  if (body.match(/^<!doctype\s*html>/)) {
+  if (body.match(/^<!doctype\s*html>/i)) {
     return "text/html";
   }
 
