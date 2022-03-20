@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/burketyler/bigsby/compare/v1.5.0...v1.5.1) (2022-03-20)
+
+
+### Bug Fixes
+
+* remove joi peer dep, dont bundle map.d.ts ([e8b8837](https://github.com/burketyler/bigsby/commit/e8b883705a22a490d46628b7fec725a84ad7fc9d))
+
 # [1.5.0](https://github.com/burketyler/bigsby/compare/v1.4.2...v1.5.0) (2022-03-20)
 
 
