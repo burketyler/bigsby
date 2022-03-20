@@ -1,5 +1,5 @@
 import { Context } from "aws-lambda";
-import cloneDeep from "lodash.clonedeep";
+import cloneDeep from "clone-deep";
 import mergeWith from "lodash.mergewith";
 import {
   fail,

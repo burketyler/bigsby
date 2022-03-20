@@ -1,4 +1,4 @@
-import cloneDeep from "lodash.clonedeep";
+import cloneDeep from "clone-deep";
 import mergeWith from "lodash.mergewith";
 import { success, fail, Throwable, Logger } from "ts-injection";
 

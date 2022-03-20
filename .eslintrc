@@ -17,7 +17,8 @@
   "settings": {
     "import/core-modules": [
       "aws-sdk",
-      "aws-lambda"
+      "aws-lambda",
+      "joi"
     ]
   },
   "plugins": [

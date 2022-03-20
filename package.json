@@ -42,22 +42,20 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "lodash.clonedeep": "4.5.0",
+    "clone-deep": "4.0.1",
     "lodash.mergewith": "4.6.2",
-    "ts-injection": "3.0.1",
-    "tslib": "2.3.1"
+    "ts-injection": "3.0.2"
   },
   "peerDependencies": {
-    "aws-sdk": "2.1001.0",
-    "joi": "17.6.0"
+    "aws-sdk": "2.1001.0"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "16.0.0",
     "@semantic-release/changelog": "6.0.1",
     "@semantic-release/git": "10.0.1",
     "@types/aws-lambda": "8.10.89",
+    "@types/clone-deep": "4.0.1",
     "@types/jest": "27.4.0",
-    "@types/lodash.clonedeep": "4.5.6",
     "@types/lodash.mergewith": "4.6.6",
     "@typescript-eslint/eslint-plugin": "5.9.0",
     "@typescript-eslint/parser": "5.9.0",
