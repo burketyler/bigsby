@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/burketyler/bigsby/compare/v1.4.2...v1.5.0) (2022-03-20)
+
+
+### Features
+
+* remove pino, make joi peer dependency ([bf4fe3c](https://github.com/burketyler/bigsby/commit/bf4fe3c090ce042a2c503707398278ca59e2fa28))
+
 ## [1.4.2](https://github.com/burketyler/bigsby/compare/v1.4.1...v1.4.2) (2022-03-18)
 
 
