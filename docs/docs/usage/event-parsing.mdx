@@ -4,6 +4,20 @@ Bigsby provides a comprehensive set of decorators to map API Gateway events into
 needs, resulting in concise, clean and easy to read code. Define the inputs that your handler requires, and let
 Bigsby inject the value into arguments of your handler.
 
+## Key inference
+
+Bigsby attempts to automatically infer the key to use when querying the event payload (e.g. the name of a header)
+based on the function argument's name when no key is provided. Define the key explicitly as a string when calling
+the decorator to let Bigsby know which property to read.
+
+:::warning
+
+Webpack and other bundlers will minify your code, including argument names. If you're using any kind of code
+minification that changes a function argument's names, you should provide a key instead of relying on automatic
+inference.
+
+:::
+
 ## Body
 
 ```typescript
@@ -16,9 +30,6 @@ class ArnyQuotesHandler implements ApiHandler {
 ```
 
 ## Query strings
-
-By default, Bigsby will match the argument name to the query string name. You can change this behaviour by specifying
-the query string name when calling `@Query`.
 
 ```typescript
 @Api()
@@ -35,9 +46,6 @@ class ArnyQuotesHandler implements ApiHandler {
 
 ## Param parameters
 
-By default, Bigsby will match the argument name to the path parameter name. You can change this behaviour by specifying
-the path parameter name when calling `@Param`.
-
 ```typescript
 @Api()
 class ArnyQuotesHandler implements ApiHandler {
@@ -52,9 +60,6 @@ class ArnyQuotesHandler implements ApiHandler {
 ```
 
 ## Headers
-
-By default, Bigsby will match the argument name to the header name. You can change this behaviour by specifying
-the header name when calling `@Header`.
 
 ```typescript
 @Api()

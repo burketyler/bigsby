@@ -11,7 +11,7 @@ id: setup
 
   # or
 
-  yarn install bigsby
+  yarn add bigsby
 ```
 
 If you plan to use request/response validation:
@@ -21,7 +21,7 @@ If you plan to use request/response validation:
 
   # or
 
-  yarn install joi
+  yarn add joi
 ```
 
 ## Configuration
@@ -38,3 +38,10 @@ Make sure your tsconfig.json contains
 Dependency Injection will trigger typescript's `strictPropertyInitialization` in classes if you use field injection.
 You can use `!` to bypass this, and if you're using eslint you might want to consider turning off
 `@typescript-eslint/no-non-null-assertion`.
+
+### Webpack
+
+Bigsby and it's underlying dependencies have been tested and are compatible with [Webpack](https://webpack.js.org/)
+v5, so there's no need to add it as an [external](https://webpack.js.org/configuration/externals/) in your webpack
+config. Including it in your bundled code will greatly reduce it's overall footprint, just make sure your config
+includes resolving `.js` files.
