@@ -166,7 +166,7 @@ export function transformResponse(
     enrichedResponse = addContentTypeHeader(enrichedResponse, context);
   }
 
-  if (enrichedResponse.body === undefined) {
+  if (enrichedResponse.body === undefined || enrichedResponse.body === null) {
     addDefaultBody(enrichedResponse);
   }
 
@@ -191,7 +191,7 @@ function addDefaultBody(response: ApiResponse): void {
     response.body = {
       code: response.statusCode,
       type: statusCodeDetails.type,
-      message: statusCodeDetails.message,
+      message: `${statusCodeDetails.message}: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/${response.statusCode}`,
     } as ApiErrorResponseBody;
   }
 }
