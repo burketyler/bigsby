@@ -189,9 +189,9 @@ function addDefaultBody(response: ApiResponse): void {
 
   if (statusCodeDetails) {
     response.body = {
-      code: response.statusCode,
-      type: statusCodeDetails.type,
+      code: statusCodeDetails.type,
       message: statusCodeDetails.message,
+      url: `https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/${response.statusCode}`,
     } as ApiErrorResponseBody;
   }
 }

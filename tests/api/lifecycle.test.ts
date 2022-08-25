@@ -216,7 +216,7 @@ describe("Lifecycle tests", () => {
       );
       expect(mockPreRes[0]).toHaveBeenCalledWith(
         expect.objectContaining({
-          response: expect.objectContaining({
+          handlerResponse: expect.objectContaining({
             body: expect.any(Object),
             statusCode: HTTP_STATUS_OK,
           }),
@@ -227,7 +227,7 @@ describe("Lifecycle tests", () => {
   });
 
   describe("When a hook takes over the response", () => {
-    it("Should pass prevResponse to each hook in a hook chain", async () => {
+    it("Should pass response to each hook in a hook chain", async () => {
       const firstResult = {
         response: new ResponseBuilder("first").statusCode(500),
       };
@@ -243,7 +243,7 @@ describe("Lifecycle tests", () => {
 
       expect(mockPreAuth[1]).toHaveBeenCalledWith(
         expect.objectContaining({
-          prevResult: new ResponseBuilder(firstResult),
+          response: firstResult.response,
         })
       );
       expect(response).toEqual(

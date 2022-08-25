@@ -136,9 +136,12 @@ export async function runRestApiLifecycle(
 
   // Invoke
   logger.debug("Calling preInvoke.");
-  response = await resolveHookChain([lifecycle?.preInvoke], {
-    context,
-  });
+  response = await resolveHookChain(
+    {
+      context,
+    },
+    lifecycle?.preInvoke
+  );
   if (response) {
     return transformResponse(response, context);
   }
@@ -146,9 +149,12 @@ export async function runRestApiLifecycle(
   // Authenticate
   if (config.request.auth) {
     logger.debug("Calling preAuth.");
-    response = await resolveHookChain([lifecycle?.preAuth], {
-      context,
-    });
+    response = await resolveHookChain(
+      {
+        context,
+      },
+      lifecycle?.preAuth
+    );
     if (response) {
       return transformResponse(response, context);
     }
@@ -162,9 +168,12 @@ export async function runRestApiLifecycle(
   // Validate (Request)
   if (config.request.schema) {
     logger.debug("Calling preValidate.");
-    response = await resolveHookChain([lifecycle?.preValidate], {
-      context,
-    });
+    response = await resolveHookChain(
+      {
+        context,
+      },
+      lifecycle?.preValidate
+    );
     if (response) {
       return transformResponse(response, context);
     }
@@ -177,9 +186,12 @@ export async function runRestApiLifecycle(
 
   // Parse
   logger.debug("Calling preParse.");
-  response = await resolveHookChain([lifecycle?.preParse], {
-    context,
-  });
+  response = await resolveHookChain(
+    {
+      context,
+    },
+    lifecycle?.preParse
+  );
   if (response) {
     return transformResponse(response, context);
   }
@@ -191,9 +203,12 @@ export async function runRestApiLifecycle(
 
   // Execute Handler
   logger.debug("Calling preExecute.");
-  response = await resolveHookChain([lifecycle?.preExecute], {
-    context,
-  });
+  response = await resolveHookChain(
+    {
+      context,
+    },
+    lifecycle?.preExecute
+  );
   if (response) {
     return transformResponse(response, context);
   }
@@ -219,10 +234,14 @@ export async function runRestApiLifecycle(
 
   // Respond
   logger.debug("Calling preResponse.");
-  response = await resolveHookChainDefault([lifecycle?.preResponse], response, {
+  response = await resolveHookChainDefault(
+    {
+      handlerResponse: response,
+      context,
+    },
     response,
-    context,
-  });
+    lifecycle?.preResponse
+  );
 
   return transformResponse(response, context);
 }
@@ -237,9 +256,9 @@ export async function convertErrorToResponse(
   if (error instanceof AuthenticationError) {
     logger.debug("Calling onAuthFail.");
     return resolveHookChainDefault(
-      [lifecycle?.onAuthFail],
+      { error: error.userError, context },
       error.userError instanceof ForbiddenError ? forbidden() : unauthorized(),
-      { error: error.userError, context }
+      lifecycle?.onAuthFail
     );
   }
 
@@ -249,12 +268,12 @@ export async function convertErrorToResponse(
   ) {
     logger.debug("Calling onRequestInvalid.");
     return resolveHookChainDefault(
-      [lifecycle?.onRequestInvalid],
-      badRequest(),
       {
         error: (error as RequestInvalidError).validateErr ?? error,
         context,
-      }
+      },
+      badRequest(),
+      lifecycle?.onRequestInvalid
     );
   }
 
@@ -264,15 +283,20 @@ export async function convertErrorToResponse(
   ) {
     logger.debug("Calling onResponseInvalid then onError.");
     return resolveHookChainDefault(
-      [lifecycle?.onResponseInvalid, lifecycle?.onError],
+      { error: (error as RequestInvalidError).validateErr ?? error, context },
       internalError(),
-      { error: (error as RequestInvalidError).validateErr ?? error, context }
+      lifecycle?.onResponseInvalid,
+      lifecycle?.onError
     );
   }
 
   logger.debug("Calling onError.");
-  return resolveHookChainDefault([lifecycle?.onError], internalError(), {
-    error,
-    context,
-  });
+  return resolveHookChainDefault(
+    {
+      error,
+      context,
+    },
+    internalError(),
+    lifecycle?.onError
+  );
 }

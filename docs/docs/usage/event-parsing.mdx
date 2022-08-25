@@ -77,11 +77,11 @@ class ArnyQuotesHandler implements ApiHandler {
 ## Request context
 
 You can access the Bigsby `RequestContext` using the `@Context` decorator. This is a disposable object which
-contains things that may be useful in some scenarios such as the original event payload, the handler's
-configuration and the Bigsby instance the handler belongs to.
+contains data that may be useful, such as the original event payload, the handler's configuration and the Bigsby
+instance the handler belongs to.
 
-The request context can also be extended to suit your needs, you may use a plugin or lifecycle hook that adds
-metadata or information to the request for consumption during execution.
+The request context's `state` property can be extended to suit your needs, you may use a plugin or lifecycle
+hook that adds metadata or information to the request for consumption during execution.
 
 ```typescript
 @Api()

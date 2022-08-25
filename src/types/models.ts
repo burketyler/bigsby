@@ -4,7 +4,7 @@ import {
   APIGatewayProxyEvent,
   APIGatewayProxyEventV2,
   Callback,
-  Context,
+  Context as ApiGatewayContext,
 } from "aws-lambda";
 import { APIGatewayProxyResult } from "aws-lambda/trigger/api-gateway-proxy"; // eslint-disable-line import/no-unresolved
 import { AnySchema, Schema, ValidationError } from "joi";
@@ -36,7 +36,7 @@ export type ApiEvent = APIGatewayProxyEvent | APIGatewayProxyEventV2;
 
 export type HandlerFunction = (
   event: ApiEvent,
-  context: Context,
+  context: ApiGatewayContext,
   callback?: Callback<ApiResponse>
 ) => Promise<ApiResponse>;
 
@@ -56,9 +56,9 @@ export interface ApiResponse extends Omit<APIGatewayProxyResult, "body"> {
 }
 
 export interface ApiErrorResponseBody {
-  code: number;
-  type: string;
+  code: string;
   message: string;
+  url: string;
 }
 
 export interface ApiHandlerConstructor {
@@ -71,7 +71,7 @@ export type ApiHandlerInvokeFunction = (
 
 export type RawHandlerInvokeFunction = (
   event: ApiEvent,
-  context: Context,
+  context: ApiGatewayContext,
   config: ApiConfig
 ) => Promise<any | ApiResponse>;
 
@@ -79,12 +79,13 @@ export interface ApiHandler {
   invoke: ApiHandlerInvokeFunction;
 }
 
-export interface RequestContext extends Record<string, any> {
+export interface RequestContext {
   rawEvent: APIGatewayProxyEvent | APIGatewayProxyEventV2;
   event: StandardizedEvent;
-  apiGwContext: Context;
+  apiGwContext: ApiGatewayContext;
   config: ApiConfig;
   bigsby: BigsbyInstance;
+  state: Record<string, any>;
 }
 
 export type StandardizedEvent = Omit<ApiEvent, "body"> & {
@@ -152,7 +153,9 @@ export type HookResult = {
   immediate?: boolean;
 } | void;
 
-export type HookInput<InputType> = InputType & { prevResult?: HookResult };
+export type HookInput<InputType> = InputType & {
+  response?: ResponseBuilder;
+};
 
 export interface ApiConfig {
   request: {
@@ -226,7 +229,7 @@ export interface ApiConfig {
     preResponse?: HookChain<
       (
         inputs: HookInput<{
-          response: ApiResponse;
+          handlerResponse: ApiResponse;
           context: RequestContext;
         }>
       ) => Promise<HookResult>

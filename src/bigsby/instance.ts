@@ -49,15 +49,15 @@ import {
 export class BigsbyInstance {
   public readonly name: string;
 
+  private readonly plugins: BigsbyPluginRegistration[];
+
   public readonly injectionContainer: InjectionContainer;
 
-  public hasInitialized: boolean;
+  private readonly authMethods: { [methodName: string]: Authenticator };
 
   public logger: Logger;
 
-  private readonly plugins: BigsbyPluginRegistration[];
-
-  private readonly authMethods: { [methodName: string]: Authenticator };
+  public hasInitialized: boolean;
 
   private globalConfig: BigsbyConfig;
 
@@ -211,9 +211,12 @@ export class BigsbyInstance {
 
   public async onApiInit(apiConfig: ApiConfig): Promise<void> {
     if (!this.hasInitialized) {
-      await resolveHookChain([apiConfig.lifecycle?.onInit], {
-        bigsby: this,
-      });
+      await resolveHookChain(
+        {
+          bigsby: this,
+        },
+        apiConfig.lifecycle?.onInit
+      );
       this.hasInitialized = true;
     }
   }
@@ -259,6 +262,7 @@ export class BigsbyInstance {
       const context: RequestContext = {
         event,
         config,
+        state: {},
         bigsby: this,
         rawEvent: apiGwEvent,
         apiGwContext: apiGwCtx,
@@ -281,12 +285,12 @@ export class BigsbyInstance {
         logger.error("Unexpected error during handler invocation.", { error });
 
         return resolveHookChainDefault(
-          [config.lifecycle?.onError],
-          internalError(),
           {
             error,
             context,
-          }
+          },
+          internalError(),
+          config.lifecycle?.onError
         );
       }
     };

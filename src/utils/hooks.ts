@@ -1,14 +1,13 @@
-import { ResponseBuilder } from "../response";
 import { ApiResponse, HookInput, HookResult } from "../types";
 
 export async function resolveHookChain<
-  HookType extends ((inputs: HookInputs) => Promise<HookResult>)[],
-  HookInputs extends HookInput<Record<string, unknown>>
+  HookInputs extends HookInput<Record<string, unknown>>,
+  HookType extends ((inputs: HookInputs) => Promise<HookResult>)[]
 >(
-  hookChainArray: (HookType | undefined)[],
-  inputs: HookInputs
+  inputs: HookInputs,
+  ...hookChainArray: (HookType | undefined)[]
 ): Promise<ApiResponse | undefined> {
-  let prevHookResult: HookResult | undefined;
+  let currentHookResult: HookResult | undefined;
 
   /* eslint-disable no-restricted-syntax, no-await-in-loop */
   for (const chain of hookChainArray) {
@@ -16,32 +15,30 @@ export async function resolveHookChain<
       for (const hook of chain) {
         const hookResult = await hook({
           ...inputs,
-          prevResult: prevHookResult
-            ? new ResponseBuilder(prevHookResult)
-            : undefined,
+          response: currentHookResult?.response,
         });
+
+        if (hookResult) {
+          currentHookResult = hookResult;
+        }
 
         if (hookResult?.immediate) {
           return hookResult.response.build();
-        }
-
-        if (hookResult) {
-          prevHookResult = hookResult;
         }
       }
     }
   }
 
-  return prevHookResult?.response.build();
+  return currentHookResult?.response.build();
 }
 
 export async function resolveHookChainDefault<
-  HookType extends ((inputs: HookInputs) => Promise<HookResult>)[],
-  HookInputs extends HookInput<Record<string, unknown>>
+  HookInputs extends HookInput<Record<string, unknown>>,
+  HookType extends ((inputs: HookInputs) => Promise<HookResult>)[]
 >(
-  hookChains: (HookType | undefined)[],
+  inputs: HookInputs,
   defaultResponse: ApiResponse,
-  inputs: HookInputs
+  ...hookChains: (HookType | undefined)[]
 ): Promise<ApiResponse> {
-  return (await resolveHookChain(hookChains, inputs)) ?? defaultResponse;
+  return (await resolveHookChain(inputs, ...hookChains)) ?? defaultResponse;
 }

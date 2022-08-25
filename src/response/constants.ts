@@ -3,28 +3,6 @@ export const CONTENT_TYPE_HEADER = "Content-Type";
 export const statusCodeDetailsMap: {
   [statusCode: number]: { type: string; message: string };
 } = {
-  100: { type: "CONTINUE", message: "Continue" },
-  101: { type: "SWITCHING_PROTOCOLS", message: "Switching Protocols" },
-  102: { type: "PROCESSING", message: "Processing" },
-  200: { type: "OK", message: "OK" },
-  201: { type: "CREATED", message: "Created" },
-  202: { type: "ACCEPTED", message: "Accepted" },
-  203: {
-    type: "NON_AUTHORITATIVE_INFORMATION",
-    message: "Non Authoritative Information",
-  },
-  204: { type: "NO_CONTENT", message: "No Content" },
-  205: { type: "RESET_CONTENT", message: "Reset Content" },
-  206: { type: "PARTIAL_CONTENT", message: "Partial Content" },
-  207: { type: "MULTI_STATUS", message: "Multi-Status" },
-  300: { type: "MULTIPLE_CHOICES", message: "Multiple Choices" },
-  301: { type: "MOVED_PERMANENTLY", message: "Moved Permanently" },
-  302: { type: "MOVED_TEMPORARILY", message: "Moved Temporarily" },
-  303: { type: "SEE_OTHER", message: "See Other" },
-  304: { type: "NOT_MODIFIED", message: "Not Modified" },
-  305: { type: "USE_PROXY", message: "Use Proxy" },
-  307: { type: "TEMPORARY_REDIRECT", message: "Temporary Redirect" },
-  308: { type: "PERMANENT_REDIRECT", message: "Permanent Redirect" },
   400: { type: "BAD_REQUEST", message: "Bad Request" },
   401: { type: "UNAUTHORIZED", message: "Unauthorized" },
   402: { type: "PAYMENT_REQUIRED", message: "Payment Required" },
@@ -38,7 +16,7 @@ export const statusCodeDetailsMap: {
   },
   408: { type: "REQUEST_TIMEOUT", message: "Request Timeout" },
   409: { type: "CONFLICT", message: "Conflict" },
-  410: { type: "Gtype", message: "Gtype" },
+  410: { type: "GONE", message: "Gone" },
   411: { type: "LENGTH_REQUIRED", message: "Length Required" },
   412: { type: "PRECONDITION_FAILED", message: "Precondition Failed" },
   413: { type: "REQUEST_TOO_LONG", message: "Request Entity Too Large" },
@@ -80,7 +58,7 @@ export const statusCodeDetailsMap: {
   },
   507: { type: "INSUFFICIENT_STORAGE", message: "Insufficient Storage" },
   511: {
-    type: "NEmessageRK_AUTHENTICATION_REQUIRED",
-    message: "Nemessagerk Authentication Required",
+    type: "NETWORK_AUTHENTICATION_REQUIRED",
+    message: "Network Authentication Required",
   },
 };
