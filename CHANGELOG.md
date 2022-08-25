@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/burketyler/bigsby/compare/v1.5.1...v1.6.0) (2022-08-25)
+
+
+### Features
+
+* **lifecycle:** add state property to requestcontext, change hook inputs ([7161b59](https://github.com/burketyler/bigsby/commit/7161b5975f57e3c82e4b6e030b89f0857e829dfb))
+
 ## [1.5.1](https://github.com/burketyler/bigsby/compare/v1.5.0...v1.5.1) (2022-03-20)
 
 
