@@ -1,3 +1,10 @@
+# [1.7.0](https://github.com/burketyler/bigsby/compare/v1.6.0...v1.7.0) (2022-09-02)
+
+
+### Features
+
+* **logging:** enhance logging and configuration ([8f7b25e](https://github.com/burketyler/bigsby/commit/8f7b25e662e83f8c14deef122c408a18f1888a00))
+
 # [1.6.0](https://github.com/burketyler/bigsby/compare/v1.5.1...v1.6.0) (2022-08-25)
 
 
