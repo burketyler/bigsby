@@ -1,3 +1,10 @@
+## [1.7.3](https://github.com/burketyler/bigsby/compare/v1.7.2...v1.7.3) (2022-09-02)
+
+
+### Bug Fixes
+
+* apply fix from ts-injection ([8ae3678](https://github.com/burketyler/bigsby/commit/8ae3678918edae1fb0f01f507feef9fd7bfd56fa))
+
 ## [1.7.2](https://github.com/burketyler/bigsby/compare/v1.7.1...v1.7.2) (2022-09-02)
 
 

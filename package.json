@@ -1,6 +1,6 @@
 {
   "name": "bigsby",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "description": "Bigsby is the newest NodeJS Lambda library on the block. Parsing, validation, auth, DI, versioning, hooks and more.",
   "main": ".build/index.js",
   "types": ".build/index.d.ts",
