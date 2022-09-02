@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/burketyler/bigsby/compare/v1.7.0...v1.7.1) (2022-09-02)
+
+
+### Bug Fixes
+
+* missing searchKey for body & context, log undefined mapping at debug ([eb0f023](https://github.com/burketyler/bigsby/commit/eb0f02323c5a94ee4d713c54868047071a82361e))
+
 # [1.7.0](https://github.com/burketyler/bigsby/compare/v1.6.0...v1.7.0) (2022-09-02)
 
 
