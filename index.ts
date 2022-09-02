@@ -54,6 +54,7 @@ export {
   AuthMethod,
   ApiEvent,
   HookResult,
+  BigsbyLogger,
   HookInput,
 } from "./src/types";
 
@@ -71,4 +72,5 @@ export {
   InjectionError,
   InjectableOptions,
   env,
+  LogLevel,
 } from "ts-injection";

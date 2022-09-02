@@ -7,7 +7,7 @@
 <img src="https://img.shields.io/badge/license-MIT-blue.svg">
 <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg"/>
 
-Bigsby is the cutest NodeJS Lambda library on the block. Written in Typescript,
+Bigsby is the newest NodeJS Lambda library on the block. Written in Typescript,
 heavily leveraging decorators and classes, it might not be everyone's cup of 🫖, but its purpose is to
 🧙‍🪄 away the heavy lifting and let you focus on the important stuff.
 

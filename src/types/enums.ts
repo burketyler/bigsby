@@ -32,6 +32,5 @@ export enum ParameterInstructionTarget {
 }
 
 export enum EnvVar {
-  LOG_LEVEL = "BIGSBY_LOG_LEVEL",
-  LOG_PRETTY = "BIGSBY_LOG_PRETTY",
+  BIGSBY_LOG = "BIGSBY_LOG",
 }

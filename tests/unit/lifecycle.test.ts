@@ -6,8 +6,7 @@ import {
 import { constants } from "http2";
 import { fail } from "ts-injection";
 
-import { BigsbyInstance } from "../../src/bigsby";
-import { Bigsby } from "../../src/bigsby/main";
+import { BigsbyInstance, Bigsby } from "../../src/bigsby";
 import * as Response from "../../src/response";
 import { ResponseBuilder } from "../../src/response";
 import { testAwsData } from "../__data__/test-aws-data";
@@ -82,7 +81,7 @@ describe("Lifecycle tests", () => {
     jest.resetAllMocks();
   });
 
-  describe("When function first initialized", () => {
+  describe("When handler first initialized", () => {
     it("Should call onInit only on first invoke, and as the first hook and with the correct input", async () => {
       await Promise.all([
         handler(mockEvent, mockContext, () => {}),

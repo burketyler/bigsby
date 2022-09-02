@@ -5,7 +5,7 @@ import {
 } from "aws-lambda";
 import { constants } from "http2";
 
-import { Bigsby } from "../../src/bigsby/main";
+import { Bigsby } from "../../src/bigsby";
 import { testAwsData } from "../__data__/test-aws-data";
 import { AuthHandler, RegisteredAuthHandler } from "../__utils__/handlers";
 

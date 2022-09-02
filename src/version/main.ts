@@ -1,9 +1,10 @@
-import { fail, Logger, success, Throwable } from "ts-injection";
+import { fail, success, Throwable } from "ts-injection";
 
 import {
   ApiEvent,
   ApiHandlerConstructor,
   BigsbyConfig,
+  BigsbyLogger,
   HandlerClassesInput,
   InjectableMetadata,
 } from "../types";
@@ -23,7 +24,7 @@ export function Version<HandlerClass extends ApiHandlerConstructor>(
 }
 
 export function getHandlerClassForVersion(
-  logger: Logger,
+  logger: BigsbyLogger,
   classes: HandlerClassesInput,
   event: ApiEvent,
   config: NonNullable<BigsbyConfig["api"]["versioning"]>

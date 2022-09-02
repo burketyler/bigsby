@@ -8,6 +8,7 @@ import {
 } from "aws-lambda";
 import { APIGatewayProxyResult } from "aws-lambda/trigger/api-gateway-proxy"; // eslint-disable-line import/no-unresolved
 import { AnySchema, Schema, ValidationError } from "joi";
+import { LogLevel } from "ts-injection";
 
 import { BigsbyInstance } from "../bigsby";
 import { ResponseBuilder } from "../response";
@@ -144,6 +145,7 @@ export type ApiHookNames = keyof ApiLifecycle;
 
 export interface BigsbyConfig {
   api: ApiConfig;
+  logging: LoggingConfig;
 }
 
 export type HookChain<HookMethod> = HookMethod[];
@@ -156,6 +158,21 @@ export type HookResult = {
 export type HookInput<InputType> = InputType & {
   response?: ResponseBuilder;
 };
+
+export interface LoggingConfig {
+  enabled: boolean;
+  level: LogLevel;
+  logger?: BigsbyLogger;
+}
+
+export interface BigsbyLogger {
+  debug: LogFunction;
+  info: LogFunction;
+  warn: LogFunction;
+  error: LogFunction;
+}
+
+export type LogFunction = (msg: string, ...meta: any[]) => void;
 
 export interface ApiConfig {
   request: {

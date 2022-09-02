@@ -1,0 +1,77 @@
+# Logging
+
+Log messages in Bigsby are produced in a structured JSON format. Noise is kept to a minimum by default, limited to the
+incoming request path and outgoing response status code. Logging behaviour can be customized using configuration or
+using an environment variable. By default, logging is enabled and set to the `info` log level.
+
+## Levels
+
+Supported log levels:
+
+- `debug`: verbose debugging information.
+- `info`: light incoming/outgoing message metadata.
+- `warn`: notable events that won't result in the pre-mature termination of the request execution lifecycle, but should
+be addressed.
+- `error`: events that result in the pre-mature termination of the request execution lifecycle.
+
+## Environment variable
+
+Logging behaviour can be defined using the `BIGSBY_LOG` environment variable. Configuration set at this
+level will override configurations provided to the Bigsby instance.
+
+A comma separated string of instance names and log levels is parsed at runtime to determine behaviour (a Bigsby
+instance can be given a name at the point of instantiation as a constructor argument).
+
+```typescript
+// "{instanceName}={logLevel},{instanceName}={logLevel}"
+process.env.BIGSBY_LOG="bigsby=info,myapp=error";
+```
+
+A wildcard `*` can be specified to turn logging on at the `debug` level for all instances.
+
+```typescript
+process.env.BIGSBY_LOG="*";
+```
+
+:::info
+
+The default instance name is `bigsby`, which increments to `bigsby(1)`, `bigsby(2)` etc. if multiple un-named
+instances are created.
+
+:::
+
+## Bigsby configuration
+
+Logging config can be defined when creating a Bigsby instance, as per below.
+
+```typescript
+const bigsby = new Bigsby(
+  {
+    logging: {
+      enabled: true,
+      level: LogLevel.INFO,
+    }
+  }
+);
+```
+
+### Logger override
+
+It's possible to BYO logger by providing an object or class which implements the `BigsbyLogger` interface. If your chosen
+logger doesn't fit this interface out of the box, it's recommended to write adapter function.
+
+```typescript
+const loggerAdapter: BigsbyLogger = {
+  info: (msg: string, ...meta: any[]) => myLogger.info(msg), // <- transform inputs here to desired format
+  // ... other methods
+}
+
+
+const bigsby = new Bigsby(
+  {
+    logging: {
+      logger: loggerAdapter
+    }
+  }
+);
+```

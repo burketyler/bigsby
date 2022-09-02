@@ -1,10 +1,15 @@
+import { LogLevel } from "ts-injection";
+
 import { INVOKE_METHOD_NAME } from "../constants";
 import { internalError } from "../response";
 import { BigsbyConfig } from "../types";
 import { freezeDeep } from "../utils";
 
 export const defaultConfig: BigsbyConfig = freezeDeep({
-  logger: {},
+  logging: {
+    enabled: true,
+    level: LogLevel.INFO,
+  },
   api: {
     request: {
       enableTypeCoercion: true,
@@ -18,5 +23,3 @@ export const defaultConfig: BigsbyConfig = freezeDeep({
 export const ERRORED_HANDLER_INSTANCE = {
   [INVOKE_METHOD_NAME]: async () => internalError(),
 };
-
-export const LOG_ENV_KEY = "BIGSBY_DEBUG";

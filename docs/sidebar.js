@@ -13,6 +13,7 @@ module.exports = {
     {
       Usage: [
         "usage/configuration",
+        "usage/logging",
         "usage/dependency-injection",
         "usage/event-parsing",
         "usage/validation",

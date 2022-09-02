@@ -1,6 +1,6 @@
 import cloneDeep from "clone-deep";
 import mergeWith from "lodash.mergewith";
-import { success, fail, Throwable, Logger } from "ts-injection";
+import { success, fail, Throwable } from "ts-injection";
 
 import { authenticate } from "../authentication";
 import { parseRequestParams } from "../parsing";
@@ -31,6 +31,7 @@ import {
   ResponseInvalidError,
   ResponseParseError,
   ApiConfig,
+  BigsbyLogger,
 } from "../types";
 import {
   resolveHookChain,
@@ -43,6 +44,10 @@ import { getHandlerClassForVersion } from "../version";
 let instanceCursor = 0;
 
 export function generateInstanceName(): string {
+  if (instanceCursor === 0) {
+    return "bigsby";
+  }
+
   instanceCursor += 1;
   return `bigsby[${instanceCursor}]`;
 }
@@ -59,7 +64,7 @@ export function concatArray(
 }
 
 export function mergeParamConfigs(
-  logger: Logger,
+  logger: BigsbyLogger,
   config: ApiConfig,
   scopedConfig: DeepPartial<ApiConfig> | undefined
 ): ApiConfig {
@@ -74,7 +79,7 @@ export function mergeParamConfigs(
 }
 
 export function getHandlerClass(
-  logger: Logger,
+  logger: BigsbyLogger,
   classes: HandlerClassesInput,
   event: ApiEvent,
   config: ApiConfig
@@ -124,15 +129,15 @@ export async function runRestApiLifecycle(
   invoke: ApiHandlerInvokeFunction,
   context: RequestContext
 ): Promise<Throwable<LifecycleErrors, ApiResponse>> {
-  const { config } = context;
+  const { config, bigsby } = context;
   const { lifecycle } = config;
-  const { logger } = context.bigsby;
+  const { logger } = bigsby;
 
   let response: ApiResponse | undefined;
 
   // Init
   logger.debug("Calling onInit.");
-  await context.bigsby.onApiInit(config);
+  await bigsby.invokeOnInitHook(config);
 
   // Invoke
   logger.debug("Calling preInvoke.");
@@ -247,7 +252,7 @@ export async function runRestApiLifecycle(
 }
 
 export async function convertErrorToResponse(
-  logger: Logger,
+  logger: BigsbyLogger,
   error: Error,
   context: RequestContext
 ): Promise<ApiResponse> {
@@ -262,10 +267,7 @@ export async function convertErrorToResponse(
     );
   }
 
-  if (
-    error instanceof RequestInvalidError ||
-    error instanceof RequestParseError
-  ) {
+  if (isRequestError(error)) {
     logger.debug("Calling onRequestInvalid.");
     return resolveHookChainDefault(
       {
@@ -277,10 +279,7 @@ export async function convertErrorToResponse(
     );
   }
 
-  if (
-    error instanceof ResponseInvalidError ||
-    error instanceof ResponseParseError
-  ) {
+  if (isResponseError(error)) {
     logger.debug("Calling onResponseInvalid then onError.");
     return resolveHookChainDefault(
       { error: (error as RequestInvalidError).validateErr ?? error, context },
@@ -298,5 +297,17 @@ export async function convertErrorToResponse(
     },
     internalError(),
     lifecycle?.onError
+  );
+}
+
+function isRequestError(error: Error): boolean {
+  return (
+    error instanceof RequestInvalidError || error instanceof RequestParseError
+  );
+}
+
+function isResponseError(error: Error): boolean {
+  return (
+    error instanceof ResponseInvalidError || error instanceof ResponseParseError
   );
 }

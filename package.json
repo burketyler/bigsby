@@ -1,7 +1,7 @@
 {
   "name": "bigsby",
   "version": "1.6.0",
-  "description": "Bigsby is the cutest NodeJS Lambda library on the block. Parsing, validation, auth, DI, versioning, hooks and more.",
+  "description": "Bigsby is the newest NodeJS Lambda library on the block. Parsing, validation, auth, DI, versioning, hooks and more.",
   "main": ".build/index.js",
   "types": ".build/index.d.ts",
   "author": "burketyler",
@@ -13,8 +13,8 @@
     "access": "public"
   },
   "keywords": [
-    "aws",
     "bigsby",
+    "aws lambda",
     "lambda functions",
     "decorators",
     "typescript",
@@ -22,7 +22,7 @@
     "versioning",
     "parsing",
     "validation",
-    "dependenci injection",
+    "dependency injection",
     "authentication",
     "middleware"
   ],
@@ -44,10 +44,10 @@
   "dependencies": {
     "clone-deep": "4.0.1",
     "lodash.mergewith": "4.6.2",
-    "ts-injection": "3.0.2"
+    "ts-injection": "3.1.1"
   },
   "peerDependencies": {
-    "aws-sdk": "2.1001.0"
+    "aws-sdk": "2.1055.0"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "16.0.0",
@@ -59,7 +59,7 @@
     "@types/lodash.mergewith": "4.6.6",
     "@typescript-eslint/eslint-plugin": "5.9.0",
     "@typescript-eslint/parser": "5.9.0",
-    "aws-sdk": "2.1001.0",
+    "aws-sdk": "2.1055.0",
     "commitizen": "4.2.4",
     "commitlint": "16.0.1",
     "cz-customizable": "6.3.0",
@@ -72,7 +72,6 @@
     "husky": "7.0.4",
     "jest": "27.4.5",
     "joi": "17.6.0",
-    "pino-pretty": "7.3.0",
     "prettier": "2.5.1",
     "semantic-release": "18.0.1",
     "source-map-support": "0.5.21",

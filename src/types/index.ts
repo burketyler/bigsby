@@ -48,4 +48,5 @@ export {
   ApiConfig,
   BigsbyConfig,
   HookChain,
+  BigsbyLogger,
 } from "./models";

@@ -48,7 +48,7 @@ export async function authenticate(
 
     return success(undefined);
   } catch (error) {
-    logger.info(error, "Authentication failed.");
+    logger.error(error, "Authentication failed.");
 
     return fail(new AuthenticationError(error));
   }
