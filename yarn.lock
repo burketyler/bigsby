@@ -6686,10 +6686,10 @@ trim-newlines@^3.0.0:
   resolved "https://registry.yarnpkg.com/trim-newlines/-/trim-newlines-3.0.1.tgz#260a5d962d8b752425b32f3a7db0dcacd176c144"
   integrity sha512-c1PTsA3tYrIsLGkJkzHF+w9F2EyxfXGo4UyJc4pFL++FMjnq0HJS69T3M7d//gKrFKwy429bouPescbjecU+Zw==
 
-ts-injection@3.1.2:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/ts-injection/-/ts-injection-3.1.2.tgz#07b9047fb949a2055ab32e9b1ff74d93ca433a60"
-  integrity sha512-a8zPGCS1cEXNNgTpKU7PbrLfhHleHCjqi4+XGOJO9qBXUpsCoTAa5ukKK7zOT0pPQkxu1SYYlh/yxdRMWD1bGQ==
+ts-injection@3.1.3:
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/ts-injection/-/ts-injection-3.1.3.tgz#20f280dd173688ce63a1e91fc96a79e7fff44572"
+  integrity sha512-GpFjqyrz87OPP2wkxQZy9jS+p5OdPxLknNTkaF8HssMrHHvyBAG3X1NJ1XTezaHxrXMCLkhd/NZqUOM7ifaiZA==
   dependencies:
     reflect-metadata "0.1.13"
 
