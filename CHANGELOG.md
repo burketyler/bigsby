@@ -1,3 +1,10 @@
+## [1.7.2](https://github.com/burketyler/bigsby/compare/v1.7.1...v1.7.2) (2022-09-02)
+
+
+### Bug Fixes
+
+* separate bigsby log level from custom logger level ([1199574](https://github.com/burketyler/bigsby/commit/1199574cc9dceb128e32722b7147df766785f04c))
+
 ## [1.7.1](https://github.com/burketyler/bigsby/compare/v1.7.0...v1.7.1) (2022-09-02)
 
 
