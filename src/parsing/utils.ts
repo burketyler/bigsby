@@ -152,7 +152,7 @@ export function evaluateInstruction(
   );
 
   if (!eventValue) {
-    logger.warn(
+    logger.debug(
       `Field '${searchKey}' doesn't exist in event.${mapsTo}, parameter at index ${paramIndex} will be undefined.`
     );
     return success(undefined);

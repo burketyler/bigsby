@@ -29,6 +29,7 @@ export function Body() {
       paramName,
       paramIndex,
       mapsTo: ParameterInstructionTarget.BODY,
+      searchKey: "body",
     });
   };
 }
@@ -44,6 +45,7 @@ export function Context() {
       paramName,
       paramIndex,
       mapsTo: ParameterInstructionTarget.CONTEXT,
+      searchKey: "context",
     });
   };
 }
