@@ -14,14 +14,10 @@ const {
   apiGw: { eventV1, contextV1 },
 } = testAwsData;
 
-const mockNativeInfo = jest.spyOn(Logger.prototype, "info");
-const mockNativeDebug = jest.spyOn(Logger.prototype, "debug");
+const spyInfo = jest.spyOn(Logger.prototype, "info");
+const spyDebug = jest.spyOn(Logger.prototype, "debug");
 
 describe("Logging tests", () => {
-  afterEach(() => {
-    jest.resetAllMocks();
-  });
-
   describe("When using default logger", () => {
     let bigsby: Bigsby;
     let mockContext: Context;
@@ -43,10 +39,18 @@ describe("Logging tests", () => {
     });
 
     it("Should invoke native logger functions", async () => {
+      const mockInfo = jest.fn();
+      const mockDebug = jest.fn();
+      spyInfo.mockImplementation(mockInfo);
+      spyDebug.mockImplementation(mockDebug);
+
       await handler(mockEvent, mockContext, () => {});
 
-      expect(mockNativeInfo).toHaveBeenCalled();
-      expect(mockNativeDebug).toHaveBeenCalled();
+      expect(mockInfo).toHaveBeenCalled();
+      expect(mockDebug).toHaveBeenCalled();
+
+      spyInfo.mockRestore();
+      spyDebug.mockRestore();
     });
   });
 
@@ -66,6 +70,7 @@ describe("Logging tests", () => {
       };
       bigsby = new Bigsby({
         logging: {
+          enabled: true,
           level: LogLevel.DEBUG,
           logger: mockLogger,
         },

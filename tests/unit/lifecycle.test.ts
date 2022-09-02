@@ -40,7 +40,7 @@ describe("Lifecycle tests", () => {
   let mockEvent: APIGatewayProxyEvent;
 
   beforeAll(() => {
-    bigsby = new Bigsby();
+    bigsby = new Bigsby({ logging: { enabled: false } });
     mockAuth = jest.fn();
     mockValidateRequest = jest.fn();
     mockValidateResponse = jest.fn();

@@ -233,10 +233,6 @@ export class BigsbyInstance {
   }
 
   private createLogger(name: string, { logging }: BigsbyConfig): BigsbyLogger {
-    if (logging.logger) {
-      return logging.logger;
-    }
-
     const shouldInjectEnvVar =
       process.env[EnvVar.BIGSBY_LOG] === undefined &&
       logging.enabled &&
@@ -246,7 +242,7 @@ export class BigsbyInstance {
       process.env[EnvVar.BIGSBY_LOG] = `${name}=${logging.level}`;
     }
 
-    return new Logger(name, EnvVar.BIGSBY_LOG);
+    return new Logger(name, EnvVar.BIGSBY_LOG, logging.logger);
   }
 
   private async loadPlugins(): Promise<void> {

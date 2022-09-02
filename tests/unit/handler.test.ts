@@ -31,7 +31,7 @@ describe("Handler tests", () => {
   let bigsby: Bigsby;
 
   beforeAll(() => {
-    bigsby = new Bigsby();
+    bigsby = new Bigsby({ logging: { enabled: false } });
     unhandledSpy = jest.spyOn(SuccessHandler.prototype, "spyOnMeUnhandled");
     mockAuth = jest.fn();
     handler = bigsby.createApiHandler(SuccessHandler, {

@@ -22,7 +22,7 @@ describe("Versioning tests", () => {
   let bigsby: Bigsby;
 
   beforeAll(() => {
-    bigsby = new Bigsby();
+    bigsby = new Bigsby({ logging: { enabled: false } });
   });
 
   beforeEach(() => {

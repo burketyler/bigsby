@@ -22,7 +22,7 @@ describe("Auth tests", () => {
   let mockAuth: jest.Mock;
 
   beforeAll(() => {
-    bigsby = new Bigsby();
+    bigsby = new Bigsby({ logging: { enabled: false } });
     mockAuth = jest.fn();
     bigsby.registerAuthScheme({ name: "MOCK_AUTH", authenticator: mockAuth });
   });

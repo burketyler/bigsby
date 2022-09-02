@@ -19,7 +19,7 @@ describe("Plugins tests", () => {
   beforeAll(() => {
     mockOnInitExpect = jest.fn();
     mockContextExpect = jest.fn();
-    bigsby = new Bigsby();
+    bigsby = new Bigsby({ logging: { enabled: false } });
     pluginOne = {
       name: "PluginOne",
       onRegister: async (instance, options) => {
