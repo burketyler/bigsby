@@ -1,3 +1,10 @@
+## [1.7.4](https://github.com/burketyler/bigsby/compare/v1.7.3...v1.7.4) (2022-09-11)
+
+
+### Bug Fixes
+
+* rename trace header to request header ([4c78082](https://github.com/burketyler/bigsby/commit/4c78082e91c75fe3af043212e11fb5bf76a54730))
+
 ## [1.7.3](https://github.com/burketyler/bigsby/compare/v1.7.2...v1.7.3) (2022-09-02)
 
 
