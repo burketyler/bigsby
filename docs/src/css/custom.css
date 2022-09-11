@@ -19,13 +19,13 @@ img[alt=logo] {
 }
 
 [data-theme='dark'] {
-  --ifm-color-primary: #9293d6;
-  --ifm-color-primary-dark: #8384c1;
-  --ifm-color-primary-darker: #7576ab;
-  --ifm-color-primary-darkest: #666796;
-  --ifm-color-primary-light: #9d9eda;
-  --ifm-color-primary-lighter: #a8a9de;
-  --ifm-color-primary-lightest: #b3b3e2;
+  --ifm-color-primary: #acadff;
+  --ifm-color-primary-dark: #9b9ce7;
+  --ifm-color-primary-darker: #8586c0;
+  --ifm-color-primary-darkest: #7172a6;
+  --ifm-color-primary-light: #c4c6ff;
+  --ifm-color-primary-lighter: #d3d4ff;
+  --ifm-color-primary-lightest: #dfdfff;
 }
 
 :root {

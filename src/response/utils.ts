@@ -1,4 +1,4 @@
-import { TRACE_ID_HEADER } from "../constants";
+import { REQUEST_ID_HEADER } from "../constants";
 import { BigsbyError, RequestContext, ApiResponse } from "../types";
 
 import { CONTENT_TYPE_HEADER } from "./constants";
@@ -9,7 +9,7 @@ export function addTraceIdHeader(
 ): ApiResponse {
   const newHeaders = { ...response.headers };
 
-  newHeaders[TRACE_ID_HEADER] = `bti_${context.apiGwContext.awsRequestId}`;
+  newHeaders[REQUEST_ID_HEADER] = context.apiGwContext.awsRequestId;
 
   return { ...response, headers: newHeaders };
 }
