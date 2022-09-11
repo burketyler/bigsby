@@ -5,7 +5,7 @@ import {
 } from "aws-lambda";
 import { constants } from "http2";
 
-import { Bigsby } from "../../src/bigsby/main";
+import { Bigsby } from "../../src/bigsby";
 import { VersioningMethod } from "../../src/types";
 import { testAwsData } from "../__data__/test-aws-data";
 import { Version1Handler, Version2Handler } from "../__utils__/handlers";
@@ -22,7 +22,7 @@ describe("Versioning tests", () => {
   let bigsby: Bigsby;
 
   beforeAll(() => {
-    bigsby = new Bigsby();
+    bigsby = new Bigsby({ logging: { enabled: false } });
   });
 
   beforeEach(() => {

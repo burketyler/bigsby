@@ -1,6 +1,6 @@
 import cloneDeep from "clone-deep";
 import mergeWith from "lodash.mergewith";
-import { success, fail, Throwable, Logger } from "ts-injection";
+import { success, fail, Throwable } from "ts-injection";
 
 import { authenticate } from "../authentication";
 import { parseRequestParams } from "../parsing";
@@ -31,6 +31,7 @@ import {
   ResponseInvalidError,
   ResponseParseError,
   ApiConfig,
+  BigsbyLogger,
 } from "../types";
 import {
   resolveHookChain,
@@ -43,6 +44,10 @@ import { getHandlerClassForVersion } from "../version";
 let instanceCursor = 0;
 
 export function generateInstanceName(): string {
+  if (instanceCursor === 0) {
+    return "bigsby";
+  }
+
   instanceCursor += 1;
   return `bigsby[${instanceCursor}]`;
 }
@@ -59,7 +64,7 @@ export function concatArray(
 }
 
 export function mergeParamConfigs(
-  logger: Logger,
+  logger: BigsbyLogger,
   config: ApiConfig,
   scopedConfig: DeepPartial<ApiConfig> | undefined
 ): ApiConfig {
@@ -74,7 +79,7 @@ export function mergeParamConfigs(
 }
 
 export function getHandlerClass(
-  logger: Logger,
+  logger: BigsbyLogger,
   classes: HandlerClassesInput,
   event: ApiEvent,
   config: ApiConfig
@@ -124,21 +129,24 @@ export async function runRestApiLifecycle(
   invoke: ApiHandlerInvokeFunction,
   context: RequestContext
 ): Promise<Throwable<LifecycleErrors, ApiResponse>> {
-  const { config } = context;
+  const { config, bigsby } = context;
   const { lifecycle } = config;
-  const { logger } = context.bigsby;
+  const { logger } = bigsby;
 
   let response: ApiResponse | undefined;
 
   // Init
   logger.debug("Calling onInit.");
-  await context.bigsby.onApiInit(config);
+  await bigsby.invokeOnInitHook(config);
 
   // Invoke
   logger.debug("Calling preInvoke.");
-  response = await resolveHookChain([lifecycle?.preInvoke], {
-    context,
-  });
+  response = await resolveHookChain(
+    {
+      context,
+    },
+    lifecycle?.preInvoke
+  );
   if (response) {
     return transformResponse(response, context);
   }
@@ -146,9 +154,12 @@ export async function runRestApiLifecycle(
   // Authenticate
   if (config.request.auth) {
     logger.debug("Calling preAuth.");
-    response = await resolveHookChain([lifecycle?.preAuth], {
-      context,
-    });
+    response = await resolveHookChain(
+      {
+        context,
+      },
+      lifecycle?.preAuth
+    );
     if (response) {
       return transformResponse(response, context);
     }
@@ -162,9 +173,12 @@ export async function runRestApiLifecycle(
   // Validate (Request)
   if (config.request.schema) {
     logger.debug("Calling preValidate.");
-    response = await resolveHookChain([lifecycle?.preValidate], {
-      context,
-    });
+    response = await resolveHookChain(
+      {
+        context,
+      },
+      lifecycle?.preValidate
+    );
     if (response) {
       return transformResponse(response, context);
     }
@@ -177,9 +191,12 @@ export async function runRestApiLifecycle(
 
   // Parse
   logger.debug("Calling preParse.");
-  response = await resolveHookChain([lifecycle?.preParse], {
-    context,
-  });
+  response = await resolveHookChain(
+    {
+      context,
+    },
+    lifecycle?.preParse
+  );
   if (response) {
     return transformResponse(response, context);
   }
@@ -191,9 +208,12 @@ export async function runRestApiLifecycle(
 
   // Execute Handler
   logger.debug("Calling preExecute.");
-  response = await resolveHookChain([lifecycle?.preExecute], {
-    context,
-  });
+  response = await resolveHookChain(
+    {
+      context,
+    },
+    lifecycle?.preExecute
+  );
   if (response) {
     return transformResponse(response, context);
   }
@@ -219,16 +239,20 @@ export async function runRestApiLifecycle(
 
   // Respond
   logger.debug("Calling preResponse.");
-  response = await resolveHookChainDefault([lifecycle?.preResponse], response, {
+  response = await resolveHookChainDefault(
+    {
+      handlerResponse: response,
+      context,
+    },
     response,
-    context,
-  });
+    lifecycle?.preResponse
+  );
 
   return transformResponse(response, context);
 }
 
 export async function convertErrorToResponse(
-  logger: Logger,
+  logger: BigsbyLogger,
   error: Error,
   context: RequestContext
 ): Promise<ApiResponse> {
@@ -237,42 +261,53 @@ export async function convertErrorToResponse(
   if (error instanceof AuthenticationError) {
     logger.debug("Calling onAuthFail.");
     return resolveHookChainDefault(
-      [lifecycle?.onAuthFail],
+      { error: error.userError, context },
       error.userError instanceof ForbiddenError ? forbidden() : unauthorized(),
-      { error: error.userError, context }
+      lifecycle?.onAuthFail
     );
   }
 
-  if (
-    error instanceof RequestInvalidError ||
-    error instanceof RequestParseError
-  ) {
+  if (isRequestError(error)) {
     logger.debug("Calling onRequestInvalid.");
     return resolveHookChainDefault(
-      [lifecycle?.onRequestInvalid],
-      badRequest(),
       {
         error: (error as RequestInvalidError).validateErr ?? error,
         context,
-      }
+      },
+      badRequest(),
+      lifecycle?.onRequestInvalid
     );
   }
 
-  if (
-    error instanceof ResponseInvalidError ||
-    error instanceof ResponseParseError
-  ) {
+  if (isResponseError(error)) {
     logger.debug("Calling onResponseInvalid then onError.");
     return resolveHookChainDefault(
-      [lifecycle?.onResponseInvalid, lifecycle?.onError],
+      { error: (error as RequestInvalidError).validateErr ?? error, context },
       internalError(),
-      { error: (error as RequestInvalidError).validateErr ?? error, context }
+      lifecycle?.onResponseInvalid,
+      lifecycle?.onError
     );
   }
 
   logger.debug("Calling onError.");
-  return resolveHookChainDefault([lifecycle?.onError], internalError(), {
-    error,
-    context,
-  });
+  return resolveHookChainDefault(
+    {
+      error,
+      context,
+    },
+    internalError(),
+    lifecycle?.onError
+  );
+}
+
+function isRequestError(error: Error): boolean {
+  return (
+    error instanceof RequestInvalidError || error instanceof RequestParseError
+  );
+}
+
+function isResponseError(error: Error): boolean {
+  return (
+    error instanceof ResponseInvalidError || error instanceof ResponseParseError
+  );
 }

@@ -1,3 +1,38 @@
+## [1.7.3](https://github.com/burketyler/bigsby/compare/v1.7.2...v1.7.3) (2022-09-02)
+
+
+### Bug Fixes
+
+* apply fix from ts-injection ([8ae3678](https://github.com/burketyler/bigsby/commit/8ae3678918edae1fb0f01f507feef9fd7bfd56fa))
+
+## [1.7.2](https://github.com/burketyler/bigsby/compare/v1.7.1...v1.7.2) (2022-09-02)
+
+
+### Bug Fixes
+
+* separate bigsby log level from custom logger level ([1199574](https://github.com/burketyler/bigsby/commit/1199574cc9dceb128e32722b7147df766785f04c))
+
+## [1.7.1](https://github.com/burketyler/bigsby/compare/v1.7.0...v1.7.1) (2022-09-02)
+
+
+### Bug Fixes
+
+* missing searchKey for body & context, log undefined mapping at debug ([eb0f023](https://github.com/burketyler/bigsby/commit/eb0f02323c5a94ee4d713c54868047071a82361e))
+
+# [1.7.0](https://github.com/burketyler/bigsby/compare/v1.6.0...v1.7.0) (2022-09-02)
+
+
+### Features
+
+* **logging:** enhance logging and configuration ([8f7b25e](https://github.com/burketyler/bigsby/commit/8f7b25e662e83f8c14deef122c408a18f1888a00))
+
+# [1.6.0](https://github.com/burketyler/bigsby/compare/v1.5.1...v1.6.0) (2022-08-25)
+
+
+### Features
+
+* **lifecycle:** add state property to requestcontext, change hook inputs ([7161b59](https://github.com/burketyler/bigsby/commit/7161b5975f57e3c82e4b6e030b89f0857e829dfb))
+
 ## [1.5.1](https://github.com/burketyler/bigsby/compare/v1.5.0...v1.5.1) (2022-03-20)
 
 

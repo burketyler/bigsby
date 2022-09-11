@@ -1,4 +1,4 @@
-import { Bigsby } from "../../src/bigsby/main";
+import { Bigsby } from "../../src/bigsby";
 import { ResponseBuilder } from "../../src/response";
 import { BigsbyPlugin, HandlerFunction } from "../../src/types";
 import { testAwsData } from "../__data__/test-aws-data";
@@ -19,7 +19,7 @@ describe("Plugins tests", () => {
   beforeAll(() => {
     mockOnInitExpect = jest.fn();
     mockContextExpect = jest.fn();
-    bigsby = new Bigsby();
+    bigsby = new Bigsby({ logging: { enabled: false } });
     pluginOne = {
       name: "PluginOne",
       onRegister: async (instance, options) => {
@@ -27,8 +27,8 @@ describe("Plugins tests", () => {
           mockOnInitExpect(options?.expect);
         });
         instance.registerApiHook("preInvoke", async ({ context }) => {
-          mockContextExpect(context.one);
-          context.one = options?.expect;
+          mockContextExpect(context.state.one);
+          context.state.one = options?.expect;
         });
       },
     };
@@ -39,14 +39,14 @@ describe("Plugins tests", () => {
           mockOnInitExpect(options?.expect);
         });
         instance.registerApiHook("preInvoke", async ({ context }) => {
-          mockContextExpect(context.one);
+          mockContextExpect(context.state.one);
         });
         instance.registerApiHook("preResponse", async ({ response }) => {
           return {
             response: new ResponseBuilder(response)
               .body(options?.expect)
               .statusCode(404),
-            action: "TAKEOVER"
+            action: "TAKEOVER",
           };
         });
       },

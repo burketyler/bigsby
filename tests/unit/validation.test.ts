@@ -6,7 +6,7 @@ import {
 import { constants } from "http2";
 import Joi from "joi";
 
-import { Bigsby } from "../../src/bigsby/main";
+import { Bigsby } from "../../src/bigsby";
 import { testAwsData } from "../__data__/test-aws-data";
 import { ValidationHandler } from "../__utils__/handlers";
 
@@ -26,7 +26,7 @@ describe("Validation tests", () => {
   let bigsby: Bigsby;
 
   beforeAll(() => {
-    bigsby = new Bigsby();
+    bigsby = new Bigsby({ logging: { enabled: false } });
   });
 
   beforeEach(() => {

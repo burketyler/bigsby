@@ -4,7 +4,7 @@ import {
   Handler as HandlerFunction,
 } from "aws-lambda";
 
-import { Bigsby } from "../../src/bigsby/main";
+import { Bigsby } from "../../src/bigsby";
 import { testAwsData } from "../__data__/test-aws-data";
 import { SuccessHandler } from "../__utils__/handlers";
 
@@ -16,7 +16,7 @@ describe("Mapping tests", () => {
   let bigsby: Bigsby;
 
   beforeAll(() => {
-    bigsby = new Bigsby();
+    bigsby = new Bigsby({ logging: { enabled: false } });
   });
 
   describe("@Body mapping tests", () => {

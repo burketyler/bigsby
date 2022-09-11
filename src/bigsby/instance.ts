@@ -13,30 +13,28 @@ import { INVOKE_METHOD_NAME } from "../constants";
 import { parseApiGwEvent } from "../parsing";
 import { badRequest, internalError } from "../response";
 import {
+  ApiConfig,
   ApiEvent,
+  ApiHandler,
+  ApiHookNames,
+  ApiLifecycle,
   ApiResponse,
   Authenticator,
+  AuthScheme,
+  BigsbyConfig,
   BigsbyError,
   BigsbyPluginRegistration,
   DeepPartial,
   HandlerClassesInput,
   HandlerFunction,
-  AuthScheme,
-  ApiHandler,
   RawHandlerInvokeFunction,
   RequestContext,
-  ApiLifecycle,
-  ApiHookNames,
-  BigsbyConfig,
-  ApiConfig,
+  BigsbyLogger,
+  EnvVar,
 } from "../types";
 import { resolveHookChain, resolveHookChainDefault } from "../utils";
 
-import {
-  defaultConfig,
-  ERRORED_HANDLER_INSTANCE,
-  LOG_ENV_KEY,
-} from "./constants";
+import { defaultConfig, ERRORED_HANDLER_INSTANCE } from "./constants";
 import {
   concatArray,
   convertErrorToResponse,
@@ -49,32 +47,29 @@ import {
 export class BigsbyInstance {
   public readonly name: string;
 
+  private readonly plugins: BigsbyPluginRegistration[];
+
   public readonly injectionContainer: InjectionContainer;
+
+  private readonly authMethods: { [methodName: string]: Authenticator };
+
+  public logger: BigsbyLogger;
 
   public hasInitialized: boolean;
 
-  public logger: Logger;
-
-  private readonly plugins: BigsbyPluginRegistration[];
-
-  private readonly authMethods: { [methodName: string]: Authenticator };
+  public hasLoadedPlugins: boolean;
 
   private globalConfig: BigsbyConfig;
 
   constructor(name: string, config?: DeepPartial<BigsbyConfig>) {
     this.name = name;
-    this.globalConfig = mergeWith(
-      cloneDeep(defaultConfig),
-      config,
-      concatArray
-    );
-    this.injectionContainer = new InjectionContainer(name, {
-      isManualInit: true,
-    });
     this.plugins = [];
     this.authMethods = {};
     this.hasInitialized = false;
-    this.logger = new Logger(this.name, LOG_ENV_KEY);
+    this.hasLoadedPlugins = false;
+    this.globalConfig = this.createGlobalConfig(config);
+    this.logger = this.createLogger(name, this.globalConfig);
+    this.injectionContainer = this.createInjectionContext(name);
   }
 
   public getConfig(): BigsbyConfig {
@@ -164,7 +159,9 @@ export class BigsbyInstance {
     scopedConfig?: DeepPartial<ApiConfig>
   ): HandlerFunction {
     return async (event: ApiEvent, context: Context): Promise<ApiResponse> => {
-      await this.initializePlugins();
+      if (!this.hasLoadedPlugins) {
+        await this.loadPlugins();
+      }
 
       this.logger.debug("Received API Gateway event.", { event, context });
 
@@ -209,28 +206,54 @@ export class BigsbyInstance {
     };
   }
 
-  public async onApiInit(apiConfig: ApiConfig): Promise<void> {
-    if (!this.hasInitialized) {
-      await resolveHookChain([apiConfig.lifecycle?.onInit], {
-        bigsby: this,
-      });
-      this.hasInitialized = true;
-    }
-  }
-
-  private async initializePlugins(): Promise<void> {
+  public async invokeOnInitHook(apiConfig: ApiConfig): Promise<void> {
     if (this.hasInitialized) {
       return;
     }
 
+    await resolveHookChain(
+      {
+        bigsby: this,
+      },
+      apiConfig.lifecycle?.onInit
+    );
+    this.hasInitialized = true;
+  }
+
+  private createGlobalConfig(
+    config: DeepPartial<BigsbyConfig> | undefined
+  ): BigsbyConfig {
+    return mergeWith(cloneDeep(defaultConfig), config, concatArray);
+  }
+
+  private createInjectionContext(name: string) {
+    return new InjectionContainer(name, {
+      isManualInit: true,
+    });
+  }
+
+  private createLogger(name: string, { logging }: BigsbyConfig): BigsbyLogger {
+    const shouldInjectEnvVar =
+      process.env[EnvVar.BIGSBY_LOG] === undefined &&
+      logging.enabled &&
+      logging.level;
+
+    if (shouldInjectEnvVar) {
+      process.env[EnvVar.BIGSBY_LOG] = `${name}=${logging.level}`;
+    }
+
+    return new Logger(name, EnvVar.BIGSBY_LOG, logging.logger);
+  }
+
+  private async loadPlugins(): Promise<void> {
+    this.logger.debug("Loading plugins.");
+
     // eslint-disable-next-line no-restricted-syntax
-    for (const registration of this.plugins) {
+    for (const { plugin, options } of this.plugins) {
       try {
-        await registration.plugin.onRegister(this, registration.options); // eslint-disable-line no-await-in-loop
+        await plugin.onRegister(this, options); // eslint-disable-line no-await-in-loop
       } catch (error) {
-        this.logger.error(
-          `Error initializing plugin ${registration.plugin.name}.`
-        );
+        this.logger.error(`Error loading plugin ${plugin.name}.`);
 
         throw error;
       }
@@ -238,7 +261,7 @@ export class BigsbyInstance {
   }
 
   private wrapInvokeMethod(
-    logger: Logger,
+    logger: BigsbyLogger,
     handlerInstance: ApiHandler
   ): RawHandlerInvokeFunction {
     logger.debug("Wrapping handler invoke method with Bigsby logic.");
@@ -252,13 +275,12 @@ export class BigsbyInstance {
     ): Promise<ApiResponse> => {
       const event = parseApiGwEvent(apiGwEvent);
 
-      logger.info(
-        `Incoming request [${event.version}] [${event.method}] ${event.path}.`
-      );
+      logger.info(`Incoming request '${event.method} ${event.path}'.`);
 
       const context: RequestContext = {
         event,
         config,
+        state: {},
         bigsby: this,
         rawEvent: apiGwEvent,
         apiGwContext: apiGwCtx,
@@ -269,7 +291,9 @@ export class BigsbyInstance {
           await runRestApiLifecycle(handlerInstance, invoke, context)
         )
           .onSuccess(async (response) => {
-            logger.info(`Responding with status [${response.statusCode}].`);
+            logger.info(
+              `Responding with status code '${response.statusCode}'.`
+            );
 
             return response;
           })
@@ -281,12 +305,12 @@ export class BigsbyInstance {
         logger.error("Unexpected error during handler invocation.", { error });
 
         return resolveHookChainDefault(
-          [config.lifecycle?.onError],
-          internalError(),
           {
             error,
             context,
-          }
+          },
+          internalError(),
+          config.lifecycle?.onError
         );
       }
     };

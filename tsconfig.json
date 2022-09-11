@@ -71,5 +71,5 @@
     "types": ["node", "jest"]
   },
   "include": ["index.ts", "src"],
-  "exclude": ["tests"]
+  "exclude": [".build"]
 }

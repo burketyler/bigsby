@@ -6,8 +6,7 @@ import {
 import { constants } from "http2";
 import { fail } from "ts-injection";
 
-import { BigsbyInstance } from "../../src/bigsby";
-import { Bigsby } from "../../src/bigsby/main";
+import { BigsbyInstance, Bigsby } from "../../src/bigsby";
 import * as Response from "../../src/response";
 import { ResponseBuilder } from "../../src/response";
 import { testAwsData } from "../__data__/test-aws-data";
@@ -41,7 +40,7 @@ describe("Lifecycle tests", () => {
   let mockEvent: APIGatewayProxyEvent;
 
   beforeAll(() => {
-    bigsby = new Bigsby();
+    bigsby = new Bigsby({ logging: { enabled: false } });
     mockAuth = jest.fn();
     mockValidateRequest = jest.fn();
     mockValidateResponse = jest.fn();
@@ -82,7 +81,7 @@ describe("Lifecycle tests", () => {
     jest.resetAllMocks();
   });
 
-  describe("When function first initialized", () => {
+  describe("When handler first initialized", () => {
     it("Should call onInit only on first invoke, and as the first hook and with the correct input", async () => {
       await Promise.all([
         handler(mockEvent, mockContext, () => {}),
@@ -216,7 +215,7 @@ describe("Lifecycle tests", () => {
       );
       expect(mockPreRes[0]).toHaveBeenCalledWith(
         expect.objectContaining({
-          response: expect.objectContaining({
+          handlerResponse: expect.objectContaining({
             body: expect.any(Object),
             statusCode: HTTP_STATUS_OK,
           }),
@@ -227,7 +226,7 @@ describe("Lifecycle tests", () => {
   });
 
   describe("When a hook takes over the response", () => {
-    it("Should pass prevResponse to each hook in a hook chain", async () => {
+    it("Should pass response to each hook in a hook chain", async () => {
       const firstResult = {
         response: new ResponseBuilder("first").statusCode(500),
       };
@@ -243,7 +242,7 @@ describe("Lifecycle tests", () => {
 
       expect(mockPreAuth[1]).toHaveBeenCalledWith(
         expect.objectContaining({
-          prevResult: new ResponseBuilder(firstResult),
+          response: firstResult.response,
         })
       );
       expect(response).toEqual(

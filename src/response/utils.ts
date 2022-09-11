@@ -9,7 +9,7 @@ export function addTraceIdHeader(
 ): ApiResponse {
   const newHeaders = { ...response.headers };
 
-  newHeaders[TRACE_ID_HEADER] = context.apiGwContext.awsRequestId;
+  newHeaders[TRACE_ID_HEADER] = `bti_${context.apiGwContext.awsRequestId}`;
 
   return { ...response, headers: newHeaders };
 }

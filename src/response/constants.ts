@@ -16,7 +16,7 @@ export const statusCodeDetailsMap: {
   },
   408: { type: "REQUEST_TIMEOUT", message: "Request Timeout" },
   409: { type: "CONFLICT", message: "Conflict" },
-  410: { type: "Gone", message: "Gone" },
+  410: { type: "GONE", message: "Gone" },
   411: { type: "LENGTH_REQUIRED", message: "Length Required" },
   412: { type: "PRECONDITION_FAILED", message: "Precondition Failed" },
   413: { type: "REQUEST_TOO_LONG", message: "Request Entity Too Large" },

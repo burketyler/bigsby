@@ -5,7 +5,7 @@ import {
 } from "aws-lambda";
 import { constants } from "http2";
 
-import { Bigsby } from "../../src/bigsby/main";
+import { Bigsby } from "../../src/bigsby";
 import { testAwsData } from "../__data__/test-aws-data";
 import { AuthHandler, RegisteredAuthHandler } from "../__utils__/handlers";
 
@@ -22,7 +22,7 @@ describe("Auth tests", () => {
   let mockAuth: jest.Mock;
 
   beforeAll(() => {
-    bigsby = new Bigsby();
+    bigsby = new Bigsby({ logging: { enabled: false } });
     mockAuth = jest.fn();
     bigsby.registerAuthScheme({ name: "MOCK_AUTH", authenticator: mockAuth });
   });
