@@ -1,3 +1,10 @@
+## [1.7.5](https://github.com/burketyler/bigsby/compare/v1.7.4...v1.7.5) (2022-09-13)
+
+
+### Bug Fixes
+
+* request validation error message ([72696a5](https://github.com/burketyler/bigsby/commit/72696a564e25fc05b6b5241e09ef3d8deea4f03b))
+
 ## [1.7.4](https://github.com/burketyler/bigsby/compare/v1.7.3...v1.7.4) (2022-09-11)
 
 
