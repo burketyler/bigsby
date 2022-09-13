@@ -85,28 +85,28 @@ export function validateRequest(
 
   logger.debug("Request schema provided, validating request.");
 
-  if (schema?.body) {
+  if (schema?.body && body) {
     ({ error } = schema.body.validate(body));
     if (error) {
       errorSchema = "Request body";
     }
   }
 
-  if (schema?.headers) {
+  if (schema?.headers && headers) {
     ({ error } = schema.headers.validate(headers));
     if (error) {
       errorSchema = "Request headers";
     }
   }
 
-  if (schema?.pathParameters) {
+  if (schema?.pathParameters && pathParameters) {
     ({ error } = schema.pathParameters.validate(pathParameters));
     if (error) {
       errorSchema = "Request pathParameters";
     }
   }
 
-  if (schema?.queryStringParameters) {
+  if (schema?.queryStringParameters && queryStringParameters) {
     ({ error } = schema.queryStringParameters.validate(queryStringParameters));
     if (error) {
       errorSchema = "Request queryStringParameters";
