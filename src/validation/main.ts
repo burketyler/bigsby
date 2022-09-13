@@ -4,7 +4,6 @@ import { Schema, ValidationError } from "joi";
 import { fail, success, Throwable } from "ts-injection";
 
 import {
-  ApiHandlerConstructor,
   ApiResponse,
   InjectableMetadata,
   RequestContext,
@@ -82,32 +81,40 @@ export function validateRequest(
     context.event;
 
   let error: ValidationError | undefined;
+  let errorSchema = "";
 
   logger.debug("Request schema provided, validating request.");
 
   if (schema?.body) {
-    error = schema.body.validate(body).error;
-    logger.error("Request body failed schema validation.", { error });
+    ({ error } = schema.body.validate(body));
+    if (error) {
+      errorSchema = "Request body";
+    }
   }
 
   if (schema?.headers) {
-    error = schema.headers.validate(headers).error;
-    logger.error("Request headers failed schema validation.", { error });
+    ({ error } = schema.headers.validate(headers));
+    if (error) {
+      errorSchema = "Request headers";
+    }
   }
 
   if (schema?.pathParameters) {
-    error = schema.pathParameters.validate(pathParameters).error;
-    logger.error("Request pathParameters failed schema validation.", { error });
+    ({ error } = schema.pathParameters.validate(pathParameters));
+    if (error) {
+      errorSchema = "Request pathParameters";
+    }
   }
 
   if (schema?.queryStringParameters) {
-    error = schema.queryStringParameters.validate(queryStringParameters).error;
-    logger.error("Request queryStringParameters failed schema validation.", {
-      error,
-    });
+    ({ error } = schema.queryStringParameters.validate(queryStringParameters));
+    if (error) {
+      errorSchema = "Request queryStringParameters";
+    }
   }
 
   if (error) {
+    logger.error(`${errorSchema} failed schema validation.`, { err: error });
     return fail(new RequestInvalidError(error));
   }
 

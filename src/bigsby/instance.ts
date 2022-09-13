@@ -302,7 +302,9 @@ export class BigsbyInstance {
           )
           .output();
       } catch (error) {
-        logger.error("Unexpected error during handler invocation.", { error });
+        logger.error("Unexpected error during handler invocation.", {
+          err: error,
+        });
 
         return resolveHookChainDefault(
           {
