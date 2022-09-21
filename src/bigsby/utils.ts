@@ -9,7 +9,6 @@ import {
   forbidden,
   internalError,
   ResponseBuilder,
-  transformResponse,
   unauthorized,
 } from "../response";
 import {
