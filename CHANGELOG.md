@@ -1,3 +1,11 @@
+## [1.7.6](https://github.com/burketyler/bigsby/compare/v1.7.5...v1.7.6) (2022-09-21)
+
+
+### Bug Fixes
+
+* response enrihing for hook takeovers ([6745943](https://github.com/burketyler/bigsby/commit/6745943f0c7ee48822ec97d4e78ab34edba8e304))
+* response enrihing for hook takeovers ([25fe1b4](https://github.com/burketyler/bigsby/commit/25fe1b4a0d6467e71e0c55f0579237a774dc243c))
+
 ## [1.7.5](https://github.com/burketyler/bigsby/compare/v1.7.4...v1.7.5) (2022-09-13)
 
 
