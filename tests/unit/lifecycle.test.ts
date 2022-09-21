@@ -81,7 +81,7 @@ describe("Lifecycle tests", () => {
     jest.resetAllMocks();
   });
 
-  describe("When handler first initialized", () => {
+  describe("When handler is first initialized", () => {
     it("Should call onInit only on first invoke, and as the first hook and with the correct input", async () => {
       await Promise.all([
         handler(mockEvent, mockContext, () => {}),
@@ -267,16 +267,21 @@ describe("Lifecycle tests", () => {
     });
 
     it.each([
-      ["preInvoke", mockPreInvoke],
-      ["preAuth", mockPreAuth],
-      ["preValidate", mockPreVal],
-      ["preExecute", mockPreExe],
-      ["preResponse", mockPreRes],
+      ["preInvoke", mockPreInvoke, 404, "body"],
+      ["preAuth", mockPreAuth, 500, { name: "body" }],
+      ["preValidate", mockPreVal, 401, {}],
+      ["preExecute", mockPreExe, 403, 5000332],
+      ["preResponse", mockPreRes, 302, null],
     ])(
       "Should return the takeover ApiResponse: %s",
-      async (name: string, mockHook: jest.Mock[]) => {
+      async (
+        name: string,
+        mockHook: jest.Mock[],
+        statusCode: number,
+        body: any
+      ) => {
         const hookResult = {
-          response: new ResponseBuilder(name).statusCode(404),
+          response: new ResponseBuilder(body).statusCode(statusCode),
           immediate: true,
         };
 
@@ -285,7 +290,14 @@ describe("Lifecycle tests", () => {
         const response = await handler(mockEvent, mockContext, () => {});
 
         expect(response).toEqual(
-          expect.objectContaining(hookResult.response.build())
+          expect.objectContaining({
+            statusCode,
+            body: typeof body === "string" ? body : JSON.stringify(body),
+            headers: expect.objectContaining({
+              "content-type": expect.any(String),
+              "x-bigsby-request-id": expect.any(String),
+            }),
+          })
         );
       }
     );
@@ -298,6 +310,10 @@ describe("Lifecycle tests", () => {
     beforeAll(() => {
       mockError = new Error("UnknownError");
       transformResponseSpy = jest.spyOn(Response, "transformResponse");
+    });
+
+    afterAll(() => {
+      transformResponseSpy.mockRestore();
     });
 
     beforeEach(() => {
@@ -365,7 +381,7 @@ describe("Lifecycle tests", () => {
     });
   });
 
-  describe("When auth method fails", () => {
+  describe("When an auth method fails", () => {
     let mockAuthError: Error;
 
     beforeAll(() => {

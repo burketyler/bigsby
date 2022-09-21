@@ -174,6 +174,73 @@ export interface BigsbyLogger {
 
 export type LogFunction = (msg: string, ...meta: any[]) => void;
 
+type ContextInputs = HookInput<{
+  context: RequestContext;
+}>;
+
+export type OnInitInputs = { bigsby: BigsbyInstance };
+export type OnInitHook = HookChain<(inputs: OnInitInputs) => Promise<void>>;
+
+export type PreInvokeInputs = ContextInputs;
+export type PreInvokeHook = HookChain<
+  (inputs: PreInvokeInputs) => Promise<HookResult>
+>;
+
+export type PreAuthInputs = ContextInputs;
+export type PreAuthHook = HookChain<
+  (inputs: PreAuthInputs) => Promise<HookResult>
+>;
+
+export type OnAuthFailInputs<ErrorType> = HookInput<{
+  error: ErrorType;
+  context: RequestContext;
+}>;
+export type OnAuthFailHook = HookChain<
+  <ErrorType>(inputs: OnAuthFailInputs<ErrorType>) => Promise<HookResult>
+>;
+
+export type PreParseInputs = ContextInputs;
+export type PreValidateInputs = ContextInputs;
+export type OnRequestInvalidInputs = HookInput<{
+  error: ValidationError | RequestParseError;
+  context: RequestContext;
+}>;
+export type PreExecuteInputs = ContextInputs;
+export type PreResponseInputs = HookInput<{
+  handlerResponse: ApiResponse;
+  context: RequestContext;
+}>;
+export type OnResponseInvalidInputs = HookInput<{
+  error: ValidationError | TypeCoercionError;
+  context: RequestContext;
+}>;
+export type OnErrorInputs = HookInput<{
+  error: unknown;
+  context: RequestContext;
+}>;
+
+export type PreParseHook = HookChain<
+  (inputs: PreParseInputs) => Promise<HookResult>
+>;
+export type PreValidateHook = HookChain<
+  (inputs: PreValidateInputs) => Promise<HookResult>
+>;
+export type OnRequestInvalidHook = HookChain<
+  (inputs: OnRequestInvalidInputs) => Promise<HookResult>
+>;
+export type PreExecuteHook = HookChain<
+  (inputs: PreExecuteInputs) => Promise<HookResult>
+>;
+export type PreResponseHook = HookChain<
+  (inputs: PreResponseInputs) => Promise<HookResult>
+>;
+export type OnResponseInvalidHook = HookChain<
+  (inputs: OnResponseInvalidInputs) => Promise<HookResult>
+>;
+export type OnErrorHook = HookChain<
+  (inputs: OnErrorInputs) => Promise<HookResult>
+>;
+
 export interface ApiConfig {
   request: {
     enableTypeCoercion: boolean;
@@ -191,81 +258,16 @@ export interface ApiConfig {
     defaultVersion: string;
   };
   lifecycle?: {
-    onInit?: HookChain<(inputs: { bigsby: BigsbyInstance }) => Promise<void>>;
-    preInvoke?: HookChain<
-      (
-        inputs: HookInput<{
-          context: RequestContext;
-        }>
-      ) => Promise<HookResult>
-    >;
-    preAuth?: HookChain<
-      (
-        inputs: HookInput<{
-          context: RequestContext;
-        }>
-      ) => Promise<HookResult>
-    >;
-    onAuthFail?: HookChain<
-      <ErrorType>(
-        inputs: HookInput<{
-          error: ErrorType;
-          context: RequestContext;
-        }>
-      ) => Promise<HookResult>
-    >;
-    preParse?: HookChain<
-      (
-        inputs: HookInput<{
-          context: RequestContext;
-        }>
-      ) => Promise<HookResult>
-    >;
-    preValidate?: HookChain<
-      (
-        inputs: HookInput<{
-          context: RequestContext;
-        }>
-      ) => Promise<HookResult>
-    >;
-    onRequestInvalid?: HookChain<
-      (
-        inputs: HookInput<{
-          error: ValidationError | RequestParseError;
-          context: RequestContext;
-        }>
-      ) => Promise<HookResult>
-    >;
-    preExecute?: HookChain<
-      (
-        inputs: HookInput<{
-          context: RequestContext;
-        }>
-      ) => Promise<HookResult>
-    >;
-    preResponse?: HookChain<
-      (
-        inputs: HookInput<{
-          handlerResponse: ApiResponse;
-          context: RequestContext;
-        }>
-      ) => Promise<HookResult>
-    >;
-    onResponseInvalid?: HookChain<
-      (
-        inputs: HookInput<{
-          error: ValidationError | TypeCoercionError;
-          context: RequestContext;
-        }>
-      ) => Promise<HookResult>
-    >;
-    onError?: HookChain<
-      (
-        inputs: HookInput<{
-          error: unknown;
-          context?: RequestContext;
-        }>
-      ) => Promise<HookResult>
-    >;
+    onInit?: OnInitHook;
+    preInvoke?: PreInvokeHook;
+    preAuth?: PreAuthHook;
+    onAuthFail?: OnAuthFailHook;
+    preParse?: PreParseHook;
+    preValidate?: PreValidateHook;
+    onRequestInvalid?: OnRequestInvalidHook;
+    preExecute?: PreExecuteHook;
+    preResponse?: PreResponseHook;
+    onResponseInvalid?: OnResponseInvalidHook;
+    onError?: OnErrorHook;
   };
 }

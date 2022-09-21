@@ -1,3 +1,4 @@
+import cloneDeep from "clone-deep";
 import { constants } from "http2";
 import { fail, success, Throwable } from "ts-injection";
 
@@ -98,12 +99,6 @@ export class ResponseBuilder {
     return this;
   }
 
-  public headers(headers: ResponseValues["headers"]): ResponseBuilder {
-    this.response.headers = headers;
-
-    return this;
-  }
-
   public header(
     headerName: string,
     value: string | number | boolean
@@ -114,10 +109,8 @@ export class ResponseBuilder {
     return this;
   }
 
-  public multiValueHeaders(
-    headers: ApiResponse["multiValueHeaders"]
-  ): ResponseBuilder {
-    this.response.multiValueHeaders = headers;
+  public headers(headers: ResponseValues["headers"]): ResponseBuilder {
+    this.response.headers = headers;
 
     return this;
   }
@@ -128,6 +121,14 @@ export class ResponseBuilder {
   ): ResponseBuilder {
     this.response.multiValueHeaders = this.response.multiValueHeaders ?? {};
     this.response.multiValueHeaders[headerName] = values;
+
+    return this;
+  }
+
+  public multiValueHeaders(
+    headers: ApiResponse["multiValueHeaders"]
+  ): ResponseBuilder {
+    this.response.multiValueHeaders = headers;
 
     return this;
   }
@@ -152,7 +153,7 @@ export function transformResponse(
   const { config } = context;
   const { logger } = context.bigsby;
 
-  let enrichedResponse: ApiResponse = { ...response };
+  let enrichedResponse: ApiResponse = cloneDeep(response);
 
   logger.debug("Transforming handler response.");
 
@@ -174,7 +175,7 @@ export function transformResponse(
 
   if (stringifyResult.isError()) {
     logger.error("Failed to stringify response.", {
-      error: stringifyResult.value(),
+      err: stringifyResult.value(),
     });
     return fail(new ResponseParseError());
   }

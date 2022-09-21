@@ -32,6 +32,7 @@ import {
   ResponseParseError,
   ApiConfig,
   BigsbyLogger,
+  ErrorCode,
 } from "../types";
 import {
   resolveHookChain,
@@ -83,7 +84,10 @@ export function getHandlerClass(
   classes: HandlerClassesInput,
   event: ApiEvent,
   config: ApiConfig
-): Throwable<"NOT_FOUND" | BigsbyError, ApiHandlerConstructor> {
+): Throwable<
+  ErrorCode.HANDLER_VERSION_NOT_FOUND | BigsbyError,
+  ApiHandlerConstructor
+> {
   if (!config.versioning) {
     if (typeof classes === "function") {
       return success(classes);
@@ -148,7 +152,7 @@ export async function runRestApiLifecycle(
     lifecycle?.preInvoke
   );
   if (response) {
-    return transformResponse(response, context);
+    return success(response);
   }
 
   // Authenticate
@@ -161,7 +165,7 @@ export async function runRestApiLifecycle(
       lifecycle?.preAuth
     );
     if (response) {
-      return transformResponse(response, context);
+      return success(response);
     }
 
     const authResult = await authenticate(context);
@@ -180,7 +184,7 @@ export async function runRestApiLifecycle(
       lifecycle?.preValidate
     );
     if (response) {
-      return transformResponse(response, context);
+      return success(response);
     }
 
     const validateReqResult = validateRequest(context);
@@ -198,7 +202,7 @@ export async function runRestApiLifecycle(
     lifecycle?.preParse
   );
   if (response) {
-    return transformResponse(response, context);
+    return success(response);
   }
 
   const requestParams = parseRequestParams(handlerInstance, context);
@@ -215,7 +219,7 @@ export async function runRestApiLifecycle(
     lifecycle?.preExecute
   );
   if (response) {
-    return transformResponse(response, context);
+    return success(response);
   }
 
   logger.debug("Calling handler invoke method.");
@@ -248,7 +252,7 @@ export async function runRestApiLifecycle(
     lifecycle?.preResponse
   );
 
-  return transformResponse(response, context);
+  return success(response);
 }
 
 export async function convertErrorToResponse(

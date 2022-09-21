@@ -5,6 +5,7 @@ import {
   ApiHandlerConstructor,
   BigsbyConfig,
   BigsbyLogger,
+  ErrorCode,
   HandlerClassesInput,
   InjectableMetadata,
 } from "../types";
@@ -28,7 +29,7 @@ export function getHandlerClassForVersion(
   classes: HandlerClassesInput,
   event: ApiEvent,
   config: NonNullable<BigsbyConfig["api"]["versioning"]>
-): Throwable<"NOT_FOUND", ApiHandlerConstructor> {
+): Throwable<ErrorCode.HANDLER_VERSION_NOT_FOUND, ApiHandlerConstructor> {
   let handler: ApiHandlerConstructor | undefined;
 
   const apiVersion = getApiVersion(event, config);
@@ -56,7 +57,7 @@ export function getHandlerClassForVersion(
   if (!handler) {
     logger.warn(`Api version ${apiVersion} has no associated handler.`);
 
-    return fail("NOT_FOUND");
+    return fail(ErrorCode.HANDLER_VERSION_NOT_FOUND);
   }
 
   return success(handler);

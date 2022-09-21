@@ -1,3 +1,7 @@
+export enum ErrorCode {
+  HANDLER_VERSION_NOT_FOUND,
+}
+
 export enum InjectableMetadata {
   REQUEST_MAPPING = "bigsby:request.mapping",
   REQUEST_SCHEMA = "bigsby:request.schema",
@@ -9,10 +13,6 @@ export enum InjectableMetadata {
 
 export enum InjectableTag {
   HANDLER = "BIGSBY_API_HANDLER",
-}
-
-export enum InjectableToken {
-  LOGGER = "LOGGER",
 }
 
 export enum InferredType {

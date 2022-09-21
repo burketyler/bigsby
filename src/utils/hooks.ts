@@ -9,27 +9,27 @@ export async function resolveHookChain<
 ): Promise<ApiResponse | undefined> {
   let currentHookResult: HookResult | undefined;
 
+  const chains = hookChainArray.filter((chain) => !!chain) as HookType[];
+
   /* eslint-disable no-restricted-syntax, no-await-in-loop */
-  for (const chain of hookChainArray) {
-    if (chain) {
-      for (const hook of chain) {
-        const hookResult = await hook({
-          ...inputs,
-          response: currentHookResult?.response,
-        });
+  for (const chain of chains) {
+    for (const hook of chain) {
+      const hookResult = await hook({
+        ...inputs,
+        response: currentHookResult?.response,
+      });
 
-        if (hookResult) {
-          currentHookResult = hookResult;
-        }
+      if (hookResult) {
+        currentHookResult = hookResult;
+      }
 
-        if (hookResult?.immediate) {
-          return hookResult.response.build();
-        }
+      if (hookResult?.immediate) {
+        break;
       }
     }
   }
 
-  return currentHookResult?.response.build();
+  return currentHookResult?.response?.build();
 }
 
 export async function resolveHookChainDefault<

@@ -167,7 +167,7 @@ export function evaluateInstruction(
   const parseResult = parseValueAsType<ParsedEventValue>(eventValue, type);
 
   if (parseResult.isError()) {
-    logger.error("Error parsing request.", { error: parseResult.value() });
+    logger.error("Error parsing request.", { err: parseResult.value() });
 
     return fail(
       new RequestParseError(

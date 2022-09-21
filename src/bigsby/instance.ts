@@ -11,7 +11,7 @@ import {
 
 import { INVOKE_METHOD_NAME } from "../constants";
 import { parseApiGwEvent } from "../parsing";
-import { badRequest, internalError } from "../response";
+import { badRequest, internalError, transformResponse } from "../response";
 import {
   ApiConfig,
   ApiEvent,
@@ -31,6 +31,7 @@ import {
   RequestContext,
   BigsbyLogger,
   EnvVar,
+  ErrorCode,
 } from "../types";
 import { resolveHookChain, resolveHookChainDefault } from "../utils";
 
@@ -192,15 +193,15 @@ export class BigsbyInstance {
           return enrichedInvoke(event, context, config);
         })
         .onError(async (error) => {
-          if (error instanceof BigsbyError) {
-            throw error;
+          if (error === ErrorCode.HANDLER_VERSION_NOT_FOUND) {
+            return badRequest();
           }
 
-          return badRequest();
+          throw error;
         })
         .output();
 
-      this.logger.debug("Response value.", { response });
+      this.logger.debug("Sending API Gateway response.", response);
 
       return response;
     };
@@ -266,7 +267,7 @@ export class BigsbyInstance {
   ): RawHandlerInvokeFunction {
     logger.debug("Wrapping handler invoke method with Bigsby logic.");
 
-    const invoke = handlerInstance[INVOKE_METHOD_NAME];
+    const invokeMethod = handlerInstance[INVOKE_METHOD_NAME];
 
     return async (
       apiGwEvent: ApiEvent,
@@ -286,27 +287,24 @@ export class BigsbyInstance {
         apiGwContext: apiGwCtx,
       };
 
-      try {
-        return await (
-          await runRestApiLifecycle(handlerInstance, invoke, context)
-        )
-          .onSuccess(async (response) => {
-            logger.info(
-              `Responding with status code '${response.statusCode}'.`
-            );
+      let response: ApiResponse;
 
-            return response;
-          })
-          .onError(async (error) =>
-            convertErrorToResponse(logger, error, context)
-          )
+      try {
+        response = await (
+          await runRestApiLifecycle(handlerInstance, invokeMethod, context)
+        )
+          .onSuccess(async (res) => res)
+          .onError((error) => convertErrorToResponse(logger, error, context))
           .output();
+
+        logger.info(`Responding with status code '${response.statusCode}'.`);
+        return transformResponse(response, context).successOrThrow();
       } catch (error) {
         logger.error("Unexpected error during handler invocation.", {
           err: error,
         });
 
-        return resolveHookChainDefault(
+        response = await resolveHookChainDefault(
           {
             error,
             context,
@@ -314,6 +312,9 @@ export class BigsbyInstance {
           internalError(),
           config.lifecycle?.onError
         );
+
+        logger.info(`Responding with status code '${response.statusCode}'.`);
+        return transformResponse(response, context).successOrThrow();
       }
     };
   }

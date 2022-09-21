@@ -114,7 +114,8 @@ export function validateRequest(
   }
 
   if (error) {
-    logger.error(`${errorSchema} failed schema validation.`, { err: error });
+    logger.error(`${errorSchema} failed schema validation.`);
+    logger.debug("Validation error.", error);
     return fail(new RequestInvalidError(error));
   }
 
@@ -135,7 +136,7 @@ export function validateResponse(
   const result = schemaForCode?.validate(response);
 
   if (result?.error) {
-    logger.error("Response failed schema validation.", { error: result.error });
+    logger.error("Response failed schema validation.", { err: result.error });
 
     return fail(new ResponseInvalidError(result.error));
   }
