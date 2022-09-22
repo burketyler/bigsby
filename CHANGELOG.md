@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/burketyler/bigsby/compare/v1.7.6...v1.8.0) (2022-09-22)
+
+
+### Features
+
+* **versioning:** versionining improvements ([74534c8](https://github.com/burketyler/bigsby/commit/74534c82d988f91a5dcee92021bf325bce1ef081))
+
 ## [1.7.6](https://github.com/burketyler/bigsby/compare/v1.7.5...v1.7.6) (2022-09-21)
 
 
