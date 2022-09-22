@@ -31,7 +31,7 @@ import {
   ResponseParseError,
   ApiConfig,
   BigsbyLogger,
-  ErrorCode,
+  InvalidApiVersionError,
 } from "../types";
 import {
   resolveHookChain,
@@ -84,12 +84,12 @@ export function getHandlerClass(
   event: ApiEvent,
   config: ApiConfig
 ): Throwable<
-  ErrorCode.HANDLER_VERSION_NOT_FOUND | BigsbyError,
-  ApiHandlerConstructor
+  InvalidApiVersionError | BigsbyError,
+  { handler: ApiHandlerConstructor; apiVersion: string }
 > {
   if (!config.versioning) {
     if (typeof classes === "function") {
-      return success(classes);
+      return success({ handler: classes, apiVersion: "" });
     }
 
     return fail(

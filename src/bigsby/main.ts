@@ -11,6 +11,7 @@ import {
   ApiHandlerConstructor,
   ApiConfig,
   BigsbyConfig,
+  RequestContext,
 } from "../types";
 
 import { BigsbyInstance } from "./instance";
@@ -43,6 +44,10 @@ export class Bigsby {
 
   public getInjectionContainer(): InjectionContainer {
     return this._instance.injectionContainer;
+  }
+
+  public getCurrentRequestContext(): RequestContext {
+    return this._instance.getCurrentRequestContext();
   }
 
   public getConfig(): BigsbyConfig {

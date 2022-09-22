@@ -11,6 +11,15 @@ export class BigsbyError extends Error {
   }
 }
 
+export class InvalidApiVersionError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "InvalidApiVersionError";
+    Object.setPrototypeOf(this, InvalidApiVersionError.prototype);
+    Error.captureStackTrace(this, this.constructor);
+  }
+}
+
 export class RequestParseError extends Error {
   constructor(message?: string) {
     super(message);

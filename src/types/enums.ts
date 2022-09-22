@@ -1,7 +1,3 @@
-export enum ErrorCode {
-  HANDLER_VERSION_NOT_FOUND,
-}
-
 export enum InjectableMetadata {
   REQUEST_MAPPING = "bigsby:request.mapping",
   REQUEST_SCHEMA = "bigsby:request.schema",

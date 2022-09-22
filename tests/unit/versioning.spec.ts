@@ -111,6 +111,11 @@ describe("Versioning tests", () => {
             expect(response).toEqual(
               expect.objectContaining({
                 statusCode: HTTP_STATUS_BAD_REQUEST,
+                body: {
+                  code: "INVALID_VERSION",
+                  message: expect.stringMatching(/.*v5.*/),
+                  url: expect.stringMatching(/.*400.*/),
+                },
               })
             );
           });

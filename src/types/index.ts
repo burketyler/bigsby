@@ -4,9 +4,9 @@ export {
   InferredType,
   ParameterInstructionTarget,
   EnvVar,
-  ErrorCode,
 } from "./enums";
 export {
+  InvalidApiVersionError,
   BigsbyError,
   RequestParseError,
   RequestInvalidError,

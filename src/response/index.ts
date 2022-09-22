@@ -8,6 +8,7 @@ export {
   forbidden,
   created,
   noContent,
+  invalidVersion,
   notFound,
   redirect,
 } from "./main";

@@ -6235,7 +6235,7 @@ socks@^2.6.1:
     ip "^1.1.5"
     smart-buffer "^4.1.0"
 
-source-map-support@0.5.21, source-map-support@^0.5.6:
+source-map-support@^0.5.6:
   version "0.5.21"
   resolved "https://registry.yarnpkg.com/source-map-support/-/source-map-support-0.5.21.tgz#04fe7c7f9e1ed2d662233c28cb2b35b9f63f6e4f"
   integrity sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==
@@ -6686,10 +6686,10 @@ trim-newlines@^3.0.0:
   resolved "https://registry.yarnpkg.com/trim-newlines/-/trim-newlines-3.0.1.tgz#260a5d962d8b752425b32f3a7db0dcacd176c144"
   integrity sha512-c1PTsA3tYrIsLGkJkzHF+w9F2EyxfXGo4UyJc4pFL++FMjnq0HJS69T3M7d//gKrFKwy429bouPescbjecU+Zw==
 
-ts-injection@3.1.3:
-  version "3.1.3"
-  resolved "https://registry.yarnpkg.com/ts-injection/-/ts-injection-3.1.3.tgz#20f280dd173688ce63a1e91fc96a79e7fff44572"
-  integrity sha512-GpFjqyrz87OPP2wkxQZy9jS+p5OdPxLknNTkaF8HssMrHHvyBAG3X1NJ1XTezaHxrXMCLkhd/NZqUOM7ifaiZA==
+ts-injection@3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/ts-injection/-/ts-injection-3.2.0.tgz#c3b79c7cbf2de905e1f8040ba8f094366ea2b72f"
+  integrity sha512-aQvor7MsVYTZWXp82qVFirzTgVYEylJE+IPdfD0HvpfVFrL7aqeXcRlmsiFB9iwunyyxD9CxgE85Ej4c1yB+0g==
   dependencies:
     reflect-metadata "0.1.13"
 

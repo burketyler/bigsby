@@ -4,13 +4,29 @@ import Joi from "joi";
 
 import { Api } from "../../src/api";
 import { Authentication } from "../../src/authentication";
-import { Body, Header, Path, Query } from "../../src/parsing";
-import { badRequest, ok } from "../../src/response";
-import { ApiHandler, ApiResponse } from "../../src/types";
+import { Bigsby } from "../../src/bigsby";
+import { Body, Context, Header, Path, Query } from "../../src/parsing";
+import { badRequest, ok, ResponseBuilder } from "../../src/response";
+import { ApiHandler, ApiResponse, RequestContext } from "../../src/types";
 import { RequestSchema, ResponseSchema } from "../../src/validation";
 import { Version } from "../../src/version";
 
 const { HTTP_STATUS_OK, HTTP_STATUS_BAD_REQUEST } = constants;
+
+@Api()
+export class InjectionHandler implements ApiHandler {
+  public async invoke(@Body() bigsby: Bigsby): Promise<ApiResponse> {
+    const ctx = bigsby.getCurrentRequestContext();
+
+    const builder = new ResponseBuilder();
+
+    if (!ctx) {
+      builder.statusCode(500).body("getCurrentRequestContext failed.");
+    }
+
+    return builder.build();
+  }
+}
 
 @Api()
 export class SuccessHandler implements ApiHandler {
@@ -117,15 +133,15 @@ export class RegisteredAuthHandler implements ApiHandler {
 @Api()
 @Version("v1")
 export class Version1Handler implements ApiHandler {
-  public async invoke(): Promise<ApiResponse> {
-    return ok("v1");
+  public async invoke(@Context() ctx: RequestContext): Promise<ApiResponse> {
+    return ok(ctx.apiVersion);
   }
 }
 
 @Api()
 @Version("v2")
 export class Version2Handler implements ApiHandler {
-  public async invoke(): Promise<ApiResponse> {
-    return ok("v2");
+  public async invoke(@Context() ctx: RequestContext): Promise<ApiResponse> {
+    return ok(ctx.apiVersion);
   }
 }

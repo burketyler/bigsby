@@ -11,7 +11,7 @@ import {
 
 import { INVOKE_METHOD_NAME } from "../constants";
 import { parseApiGwEvent } from "../parsing";
-import { badRequest, internalError, transformResponse } from "../response";
+import { internalError, invalidVersion, transformResponse } from "../response";
 import {
   ApiConfig,
   ApiEvent,
@@ -31,11 +31,15 @@ import {
   RequestContext,
   BigsbyLogger,
   EnvVar,
-  ErrorCode,
+  InvalidApiVersionError,
 } from "../types";
 import { resolveHookChain, resolveHookChainDefault } from "../utils";
 
-import { defaultConfig, ERRORED_HANDLER_INSTANCE } from "./constants";
+import {
+  DEFAULT_CONFIG,
+  ERRORED_HANDLER_INSTANCE,
+  TOKEN_REQ_CONTEXT,
+} from "./constants";
 import {
   concatArray,
   convertErrorToResponse,
@@ -78,7 +82,7 @@ export class BigsbyInstance {
   }
 
   public setConfig(config: DeepPartial<BigsbyConfig>): BigsbyConfig {
-    this.globalConfig = mergeWith(defaultConfig, config, concatArray);
+    this.globalConfig = mergeWith(DEFAULT_CONFIG, config, concatArray);
 
     return this.getConfig();
   }
@@ -108,10 +112,6 @@ export class BigsbyInstance {
 
       this.plugins.push(registration);
     });
-  }
-
-  public getPlugins(): BigsbyPluginRegistration[] {
-    return this.plugins;
   }
 
   public registerApiHook<
@@ -178,23 +178,26 @@ export class BigsbyInstance {
         event,
         config
       )
-        .onSuccess<Promise<ApiResponse>>(async (HandlerClass) => {
-          config = mergeAnnotationConfigs(HandlerClass, config);
+        .onSuccess<Promise<ApiResponse>>(
+          async ({ handler: HandlerClass, apiVersion }) => {
+            config = mergeAnnotationConfigs(HandlerClass, config);
 
-          this.logger.debug("Initializing injection container.");
-          this.injectionContainer.initialize();
+            this.logger.debug("Initializing injection container.");
+            this.injectionContainer.initialize();
 
-          const enrichedInvoke = this.wrapInvokeMethod(
-            this.logger,
-            this.injectionContainer.resolve(HandlerClass) ??
-              ERRORED_HANDLER_INSTANCE
-          );
+            const enrichedInvoke = this.wrapInvokeMethod(
+              this.logger,
+              this.injectionContainer.resolve(HandlerClass) ??
+                ERRORED_HANDLER_INSTANCE,
+              apiVersion
+            );
 
-          return enrichedInvoke(event, context, config);
-        })
+            return enrichedInvoke(event, context, config);
+          }
+        )
         .onError(async (error) => {
-          if (error === ErrorCode.HANDLER_VERSION_NOT_FOUND) {
-            return badRequest();
+          if (error instanceof InvalidApiVersionError) {
+            return invalidVersion(error.message);
           }
 
           throw error;
@@ -221,10 +224,14 @@ export class BigsbyInstance {
     this.hasInitialized = true;
   }
 
+  public getCurrentRequestContext(): RequestContext {
+    return this.injectionContainer.resolve(TOKEN_REQ_CONTEXT);
+  }
+
   private createGlobalConfig(
     config: DeepPartial<BigsbyConfig> | undefined
   ): BigsbyConfig {
-    return mergeWith(cloneDeep(defaultConfig), config, concatArray);
+    return mergeWith(cloneDeep(DEFAULT_CONFIG), config, concatArray);
   }
 
   private createInjectionContext(name: string) {
@@ -263,7 +270,8 @@ export class BigsbyInstance {
 
   private wrapInvokeMethod(
     logger: BigsbyLogger,
-    handlerInstance: ApiHandler
+    handlerInstance: ApiHandler,
+    apiVersion: string
   ): RawHandlerInvokeFunction {
     logger.debug("Wrapping handler invoke method with Bigsby logic.");
 
@@ -281,11 +289,16 @@ export class BigsbyInstance {
       const context: RequestContext = {
         event,
         config,
+        apiVersion,
         state: {},
         bigsby: this,
         rawEvent: apiGwEvent,
         apiGwContext: apiGwCtx,
       };
+
+      this.injectionContainer
+        .register(context, TOKEN_REQ_CONTEXT)
+        .successOrThrow();
 
       let response: ApiResponse;
 
@@ -315,6 +328,8 @@ export class BigsbyInstance {
 
         logger.info(`Responding with status code '${response.statusCode}'.`);
         return transformResponse(response, context).successOrThrow();
+      } finally {
+        this.injectionContainer.deRegister(TOKEN_REQ_CONTEXT);
       }
     };
   }

@@ -1,7 +1,6 @@
-import { REQUEST_ID_HEADER } from "../constants";
 import { BigsbyError, RequestContext, ApiResponse } from "../types";
 
-import { CONTENT_TYPE_HEADER } from "./constants";
+import { CONTENT_TYPE_HEADER, REQUEST_ID_HEADER } from "./constants";
 
 export function addTraceIdHeader(
   response: ApiResponse,

@@ -11,7 +11,7 @@ import {
 } from "../types";
 import { isApiResponse, tryStringify } from "../utils";
 
-import { statusCodeDetailsMap } from "./constants";
+import { DEFAULT_RESPONSE_MAP } from "./constants";
 import { ResponseValues } from "./types";
 import {
   addContentTypeHeader,
@@ -70,6 +70,18 @@ export function unauthorized(body?: ApiResponse["body"]): ApiResponse {
 
 export function forbidden(body?: ApiResponse["body"]): ApiResponse {
   return new ResponseBuilder(body).statusCode(HTTP_STATUS_FORBIDDEN).build();
+}
+
+export function invalidVersion(message: string): ApiResponse {
+  return badRequest({
+    code: "INVALID_VERSION",
+    message,
+    url: createErrorUrl(400),
+  } as ApiErrorResponseBody);
+}
+
+function createErrorUrl(statusCode: number): string {
+  return `https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/${statusCode}`;
 }
 
 export class ResponseBuilder {
@@ -186,13 +198,13 @@ export function transformResponse(
 }
 
 function addDefaultBody(response: ApiResponse): void {
-  const statusCodeDetails = statusCodeDetailsMap[response.statusCode];
+  const statusCodeDetails = DEFAULT_RESPONSE_MAP[response.statusCode];
 
   if (statusCodeDetails) {
     response.body = {
-      code: statusCodeDetails.type,
+      code: statusCodeDetails.code,
       message: statusCodeDetails.message,
-      url: `https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/${response.statusCode}`,
+      url: createErrorUrl(response.statusCode),
     } as ApiErrorResponseBody;
   }
 }

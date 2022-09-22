@@ -87,6 +87,7 @@ export interface RequestContext {
   config: ApiConfig;
   bigsby: BigsbyInstance;
   state: Record<string, any>;
+  apiVersion: string;
 }
 
 export type StandardizedEvent = Omit<ApiEvent, "body"> & {
