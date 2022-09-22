@@ -5,6 +5,13 @@ Bigsby supports header and path based versioning out of the box. Define a `metho
 classes when creating your handler function in order to have Bigsby automatically route
 requests to the correct function.
 
+:::tip
+
+The api version of the handler being invoked is provided as the `apiVersion` property on the
+`RequestContext` object.
+
+:::
+
 ```typescript
 const bigsby = new Bigsby({
   api: {

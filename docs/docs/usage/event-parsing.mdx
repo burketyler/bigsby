@@ -96,6 +96,13 @@ class ArnyQuotesHandler implements ApiHandler {
 }
 ```
 
+:::tip
+
+You can access the request context outside the scope of a handler's invoke method via the `getCurrentRequestContext()`
+method on the Bigsby instance.
+
+:::
+
 ## Type inference & coercion
 
 Bigsby uses reflection to infer the type of the arguments you define and will attempt to coerce the value
