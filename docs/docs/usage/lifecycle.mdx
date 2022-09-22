@@ -38,7 +38,7 @@ const bigsby = new Bigsby({
       onRequestInvalid: [addErrorPayload]
     }
   }
-})
+});
 
 async function addErrorPayload({ error }: OnRequestInvalidInputs): Promise<HookResult> {
   if (error instanceof ValidationError) {
