@@ -71,4 +71,5 @@ export {
   PreInvokeInputs,
   PreAuthHook,
   PreAuthInputs,
+  RegisteredPlugin,
 } from "./models";

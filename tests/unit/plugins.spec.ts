@@ -1,7 +1,7 @@
 import { Bigsby } from "../../src/bigsby";
-import { ResponseBuilder } from "../../src/response";
 import { BigsbyPlugin, HandlerFunction } from "../../src/types";
 import { testAwsData } from "../__data__/test-aws-data";
+import { mockBigsbyPlugin } from "../__mocks__/mock-plugin";
 import { SuccessHandler } from "../__utils__/handlers";
 
 const {
@@ -13,7 +13,6 @@ describe("Plugins tests", () => {
   let mockOnInitExpect: jest.Mock;
   let mockContextExpect: jest.Mock;
   let pluginOne: BigsbyPlugin;
-  let pluginTwo: BigsbyPlugin;
   let handler: HandlerFunction;
 
   beforeAll(() => {
@@ -32,25 +31,6 @@ describe("Plugins tests", () => {
         });
       },
     };
-    pluginTwo = {
-      name: "PluginTwo",
-      onRegister: async (instance, options) => {
-        instance.registerApiHook("onInit", async () => {
-          mockOnInitExpect(options?.expect);
-        });
-        instance.registerApiHook("preInvoke", async ({ context }) => {
-          mockContextExpect(context.state.one);
-        });
-        instance.registerApiHook("preResponse", async ({ response }) => {
-          return {
-            response: new ResponseBuilder(response)
-              .body(options?.expect)
-              .statusCode(404),
-            action: "TAKEOVER",
-          };
-        });
-      },
-    };
   });
 
   beforeAll(() => {
@@ -60,7 +40,7 @@ describe("Plugins tests", () => {
         options: { expect: "PluginOne" },
       },
       {
-        plugin: pluginTwo,
+        plugin: "mock-plugin",
         options: { expect: "PluginTwo" },
       },
     ]);
@@ -74,9 +54,11 @@ describe("Plugins tests", () => {
     expect(response.body).toEqual("PluginTwo");
 
     expect(mockOnInitExpect).toHaveBeenCalledWith("PluginOne");
-    expect(mockContextExpect).toHaveBeenCalledWith(undefined);
+    expect(mockBigsbyPlugin.mockOnInitExpect).toHaveBeenCalledWith("PluginTwo");
 
-    expect(mockOnInitExpect).toHaveBeenCalledWith("PluginTwo");
-    expect(mockContextExpect).toHaveBeenCalledWith("PluginOne");
+    expect(mockContextExpect).toHaveBeenCalledWith(undefined);
+    expect(mockBigsbyPlugin.mockContextExpect).toHaveBeenCalledWith(
+      "PluginOne"
+    );
   });
 });

@@ -17,7 +17,7 @@ async function addJwtAuthScheme(
 ): Promise<void> {
   instance.registerAuthMethod({
     name: "jwt",
-    authenticator: async ({ event }) => {
+    authenticator: async ({ event }: RequestContext) => {
       return verifyJwt(event.headers.authorization, options.secret);
     },
   });
@@ -37,3 +37,39 @@ Plugins will execute in the order of their registration when your handler
 initializes.
 
 :::
+
+## Modules
+
+### Composition
+
+A Bigsby plugin distributed as an npm package is defined by a `default` export from the
+module index containing the Bigsby plugin. The example above can be converted to a distributable
+package by adding the below to the root `index.js`.
+
+```typescript
+export default {
+  name: "bigsby-plugin-jwt-auth",
+  onRegister: async (
+  instance: BigsbyInstance,
+  options: Record<string, unknown>
+): Promise<void> => {
+    instance.registerAuthMethod({
+      name: "jwt",
+      authenticator: async ({ event }: RequestContext) => {
+        return verifyJwt(event.headers.authorization, options.secret);
+      },
+    });
+  },
+} as BigsbyPlugin;
+```
+
+### Registration
+
+Bigsby plugins can be consumed directly from the `node_modules` folder by supplying the package
+name instead of a plugin object when registering on the Bigsby instance.
+
+```typescript
+const bigsby = new Bigsby();
+
+bigsby.registerPlugin({ plugin: "bigsby-plugin-jwt-auth", options: { secret: "mySecretKey" } });
+```

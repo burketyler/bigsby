@@ -136,8 +136,12 @@ export interface BigsbyPlugin {
 }
 
 export interface BigsbyPluginRegistration {
-  plugin: BigsbyPlugin;
+  plugin: BigsbyPlugin | string;
   options?: Record<string, unknown>;
+}
+
+export interface RegisteredPlugin extends BigsbyPluginRegistration {
+  plugin: BigsbyPlugin;
 }
 
 export type ApiLifecycle = Required<Required<BigsbyConfig["api"]>["lifecycle"]>;

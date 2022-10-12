@@ -23,7 +23,7 @@ async function apiKeyAuthenticator(ctx: RequestContext): Promise<void> {
     throw new CustomError();
   } else {
     // For use later in lifecycle
-    ctx.apiKey = apiKey;
+    ctx.state.user = getUserInfo(apiKey);
   }
 }
 ```
@@ -67,8 +67,8 @@ const bigsby = new Bigsby();
 
 bigsby.registerAuthScheme({
   name: "ApiKeyAuth",
-  authenticator: async ({ event }): Promise<void> => {
-    if (!event.headers["X-Api-Key"]) {
+  authenticator: async ({ event }: RequestContext): Promise<void> => {
+    if (!event.headers["x-api-key"]) {
       throw new UnauthorizedError();
     }
   },
@@ -93,8 +93,8 @@ Simply pass your authenticator method as an argument without needing to onRegist
 ```typescript
 const bigsby = new Bigsby();
 
-async function apiKeyAuthenticator({ event }): Promise<void> {
-  if (!event.headers["X-Api-Key"]) {
+async function apiKeyAuthenticator({ event }: RequestContext): Promise<void> {
+  if (!event.headers["x-api-key"]) {
     throw new UnauthorizedError();
   }
 }

@@ -32,6 +32,7 @@ import {
   ApiConfig,
   BigsbyLogger,
   InvalidApiVersionError,
+  BigsbyPlugin,
 } from "../types";
 import {
   resolveHookChain,
@@ -312,5 +313,15 @@ function isRequestError(error: Error): boolean {
 function isResponseError(error: Error): boolean {
   return (
     error instanceof ResponseInvalidError || error instanceof ResponseParseError
+  );
+}
+
+export function isBigsbyPlugin(plugin: unknown): plugin is BigsbyPlugin {
+  const castPlugin = plugin as BigsbyPlugin;
+
+  return (
+    !!castPlugin.name &&
+    !!castPlugin.onRegister &&
+    typeof castPlugin.onRegister === "function"
   );
 }

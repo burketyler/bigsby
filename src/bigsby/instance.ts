@@ -32,6 +32,8 @@ import {
   BigsbyLogger,
   EnvVar,
   InvalidApiVersionError,
+  BigsbyPlugin,
+  RegisteredPlugin,
 } from "../types";
 import { resolveHookChain, resolveHookChainDefault } from "../utils";
 
@@ -44,6 +46,7 @@ import {
   concatArray,
   convertErrorToResponse,
   getHandlerClass,
+  isBigsbyPlugin,
   mergeAnnotationConfigs,
   mergeParamConfigs,
   runRestApiLifecycle,
@@ -52,7 +55,7 @@ import {
 export class BigsbyInstance {
   public readonly name: string;
 
-  private readonly plugins: BigsbyPluginRegistration[];
+  private readonly plugins: RegisteredPlugin[];
 
   public readonly injectionContainer: InjectionContainer;
 
@@ -102,15 +105,30 @@ export class BigsbyInstance {
       : [registrationOrRegistrations];
 
     plugins.forEach((registration) => {
-      const { plugin } = registration;
+      let plugin: BigsbyPlugin;
+
+      if (typeof registration.plugin === "string") {
+        // eslint-disable-next-line global-require,import/no-dynamic-require, @typescript-eslint/no-var-requires
+        const { default: module } = require(registration.plugin);
+
+        if (!isBigsbyPlugin(module)) {
+          throw new BigsbyError(
+            `${registration.plugin} isn't a valid Bigsby plugin.`
+          );
+        }
+
+        plugin = module;
+      } else {
+        plugin = registration.plugin;
+      }
 
       this.logger.debug(`Registering plugin ${plugin.name}.`);
 
-      if (this.plugins.some((reg) => reg.plugin.name === plugin.name)) {
+      if (this.plugins.some(({ plugin: { name } }) => name === plugin.name)) {
         throw new BigsbyError(`Plugin ${plugin.name} already exists.`);
       }
 
-      this.plugins.push(registration);
+      this.plugins.push({ plugin, options: registration.options });
     });
   }
 
