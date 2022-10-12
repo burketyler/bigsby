@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/burketyler/bigsby/compare/v1.8.0...v1.9.0) (2022-10-12)
+
+
+### Features
+
+* add plugin module support ([1a38c25](https://github.com/burketyler/bigsby/commit/1a38c25d98ce8753014f4085323ded37faf575a9))
+
 # [1.8.0](https://github.com/burketyler/bigsby/compare/v1.7.6...v1.8.0) (2022-09-22)
 
 
