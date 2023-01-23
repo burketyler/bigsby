@@ -6,7 +6,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/vsDark");
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
-  title: "Documentation",
+  title: "Bigsby | Docs",
   tagline: "bigsby documentation",
   url: "https://burketyler.github.io",
   baseUrl: "/bigsby/",
@@ -72,7 +72,7 @@ const config = {
               },
               {
                 label: "Usage",
-                to: "/docs/usage",
+                to: "/docs/usage/configuration",
               },
             ],
           },
