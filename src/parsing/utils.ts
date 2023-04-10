@@ -68,7 +68,7 @@ export function annotateParamMetadata({
   mapsTo,
   searchKey,
 }: {
-  targetClass: Record<string, unknown>;
+  targetClass: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   paramName: string;
   paramIndex: number;
   mapsTo: ParameterInstructionTarget;
@@ -106,12 +106,12 @@ export function createMappingAnnotationWithSearchKey(
   mapsTo: ParameterInstructionTarget,
   name?: string
 ): (
-  targetClass: Record<string, unknown>,
+  targetClass: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   paramName: string,
   paramIndex: number
 ) => void {
   return (
-    targetClass: Record<string, unknown>,
+    targetClass: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     paramName: string,
     paramIndex: number
   ) => {

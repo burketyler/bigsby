@@ -19,11 +19,8 @@ import {
 } from "./utils";
 
 export function Body() {
-  return (
-    targetClass: Record<string, unknown>,
-    paramName: string,
-    paramIndex: number
-  ): void => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (targetClass: any, paramName: string, paramIndex: number): void => {
     annotateParamMetadata({
       targetClass,
       paramName,
@@ -36,7 +33,7 @@ export function Body() {
 
 export function Context() {
   return (
-    targetClass: Record<string, unknown>,
+    targetClass: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     paramName: string,
     paramIndex: number
   ): void => {
