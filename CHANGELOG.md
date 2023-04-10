@@ -1,3 +1,11 @@
+## [1.9.1](https://github.com/burketyler/bigsby/compare/v1.9.0...v1.9.1) (2023-04-10)
+
+
+### Bug Fixes
+
+* readme link to docs ([16415f3](https://github.com/burketyler/bigsby/commit/16415f3385d3368a1babbf4c7f2241c71504f4c4))
+* typescript v5 class target type ([77183a1](https://github.com/burketyler/bigsby/commit/77183a19658240f6605893a0bff069ec540bf2d6))
+
 # [1.9.0](https://github.com/burketyler/bigsby/compare/v1.8.0...v1.9.0) (2022-10-12)
 
 
