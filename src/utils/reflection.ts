@@ -1,4 +1,4 @@
-import { PRIMITIVE_TYPES, success, Throwable } from "ts-injection";
+import { PRIMITIVE_TYPES, success, fail, Throwable } from "ts-injection";
 
 import { ApiResponse, BigsbyError, InferredType } from "../types";
 
