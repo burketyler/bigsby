@@ -1,3 +1,10 @@
+## [1.9.4](https://github.com/burketyler/bigsby/compare/v1.9.3...v1.9.4) (2023-04-11)
+
+
+### Bug Fixes
+
+* fail not returned ([d2d622d](https://github.com/burketyler/bigsby/commit/d2d622db3b923f0843b2aaed2c62b27c561e76cb))
+
 ## [1.9.3](https://github.com/burketyler/bigsby/compare/v1.9.2...v1.9.3) (2023-04-11)
 
 
