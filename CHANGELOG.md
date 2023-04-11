@@ -1,3 +1,10 @@
+## [1.9.3](https://github.com/burketyler/bigsby/compare/v1.9.2...v1.9.3) (2023-04-11)
+
+
+### Bug Fixes
+
+* remove aws-sdk peer dep ([7ba9954](https://github.com/burketyler/bigsby/commit/7ba9954364ff8c19b838c608aa4b69fce6c95106))
+
 ## [1.9.2](https://github.com/burketyler/bigsby/compare/v1.9.1...v1.9.2) (2023-04-11)
 
 
