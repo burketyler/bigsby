@@ -46,9 +46,6 @@
     "lodash.mergewith": "4.6.2",
     "ts-injection": "3.2.0"
   },
-  "peerDependencies": {
-    "aws-sdk": "2.1055.0"
-  },
   "devDependencies": {
     "@commitlint/config-conventional": "16.0.0",
     "@semantic-release/changelog": "6.0.1",
