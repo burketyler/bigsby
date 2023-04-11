@@ -19,7 +19,7 @@ export function getInferredTypesForClassMethod(
   );
 
   if (!types) {
-    fail(new BigsbyError("Provided class method has no types."));
+    return fail(new BigsbyError("Provided class method has no types."));
   }
 
   return success(
