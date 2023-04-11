@@ -1,3 +1,10 @@
+## [1.9.2](https://github.com/burketyler/bigsby/compare/v1.9.1...v1.9.2) (2023-04-11)
+
+
+### Bug Fixes
+
+* missing import for fail ([f7d4f7d](https://github.com/burketyler/bigsby/commit/f7d4f7d7ead1ffe7dfaa9026759a32fbcde36836))
+
 ## [1.9.1](https://github.com/burketyler/bigsby/compare/v1.9.0...v1.9.1) (2023-04-10)
 
 
